@@ -118,7 +118,6 @@ footer{border-top:1px solid var(--line)}
       <small id="hero-s" hidden>Биты в стиле</small>
       <div id="artists" class="artists" hidden></div>
       <h1 id="hero-h1">Биты со <em>старой</em> душой</h1>
-      <p>Тёплый, грязный, настоящий звук. Слушай, выбирай лицензию и пиши мне, файлы вышлю после оплаты.</p>
       <a class="btn" href="#beats">Слушать</a><a class="btn o" href="#lic">Цены</a>
     </div>
     <div class="vinyl" aria-hidden="true"></div>
@@ -277,7 +276,7 @@ function startArtists(rows){
   box.innerHTML=rows.map(function(a,i){return '<div class="sl'+(i?'':' on')+'"><img alt="'+esc(a.name)+'" src="'+esc(a.src)+'">'+(a.name?'<div class="nm">'+esc(a.name)+'</div>':'')+'</div>'}).join("");
   box.hidden=false;$("hero-s").hidden=false;$("hero-h1").hidden=true;
   var sl=box.querySelectorAll(".sl"),k=0;
-  if(sl.length>1&&!(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches))
+  if(sl.length>1)
     setInterval(function(){sl[k].classList.remove("on");k=(k+1)%sl.length;sl[k].classList.add("on")},3500);
 }
 var SA=[];for(var q=1;q<=9;q++)SA.push({name:"",src:"a0"+q+".jpg"});
