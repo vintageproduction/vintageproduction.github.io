@@ -97,32 +97,35 @@ footer{border-top:2px double var(--line);text-align:center;padding:18px 0 30px;f
     <a class="btn" id="tg" href="#">Telegram</a><a class="btn o" id="ig" href="#">Instagram</a>
   </section>
 </div>
-<footer>© <span id="y"></span> Vintage Beats</footer><script>// ЧТОБЫ ДОБАВИТЬ БИТ: скопируй строку ниже, поменяй данные,
-// положи mp3-демку в папку beats и впиши путь в src.
-var BEATS=[
-  {n:"KEn",bpm:"172",key:"C min",tag:"kendrick lamar type beat",price:"20",src:"ken.mp3"}
-];
-var TG="vintage999hustle",IG="https://www.instagram.com/vintage26hustle/";
-
+<footer>© <span id="y"></span> Vintage Beats</footer><script>var SB="https://lyejwcetufbwjyeihjbg.supabase.co",KEY="sb_publishable_U6F7QYuQfUTkLhGN7tYweg_GXjfflzo";
 var $=function(i){return document.getElementById(i)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+var TG="vintage999hustle",IG="https://www.instagram.com/vintage26hustle/";
 $("tg").href="https://t.me/"+TG;$("ig").href=IG;$("y").textContent=new Date().getFullYear();
 var cur=null,curDisc=null,list=$("list");
 var canHover=window.matchMedia&&matchMedia("(hover:hover)").matches;
-function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function stop(){if(cur){cur.pause();curDisc.classList.remove("on")}}
 function go(a,d){var p=a.play();if(p&&p.then){p.then(function(){d.classList.add("on")}).catch(function(){})}else d.classList.add("on")}
-BEATS.forEach(function(b){
-  var d=document.createElement("div");d.className="card";
-  d.innerHTML='<button class="disc"'+(b.src?'':' disabled title="Демо скоро"')+'></button><b>'+esc(b.n)+'</b><div class="m">'+esc(b.bpm)+' BPM · '+esc(b.key)+'<br>'+esc(b.tag)+'</div><div class="pr">от $'+esc(b.price)+'</div><a class="btn" href="https://t.me/'+TG+'">Купить</a>';
-  var disc=d.querySelector(".disc");
-  function start(){
-    if(!b.src)return;
-    if(cur&&curDisc===disc){if(cur.paused)go(cur,disc);return}
-    stop();cur=new Audio(b.src);curDisc=disc;cur.preload="auto";
-    cur.onended=function(){disc.classList.remove("on")};go(cur,disc);
-  }
-  disc.onclick=function(){if(cur&&curDisc===disc&&!cur.paused){if(!canHover)stop();return}start()};
-  if(canHover){disc.onmouseenter=start;disc.onmouseleave=function(){if(curDisc===disc)stop()}}
-  list.appendChild(d);
-});
+function render(rows){
+  list.innerHTML="";
+  if(!rows.length){list.innerHTML='<p class="sub">Скоро здесь появятся новые биты</p>';return}
+  rows.forEach(function(b){
+    var src=b.audio_path?SB+"/storage/v1/object/public/demos/"+b.audio_path:"";
+    var d=document.createElement("div");d.className="card";
+    d.innerHTML='<button class="disc"'+(src?'':' disabled title="Демо скоро"')+'></button><b>'+esc(b.name)+'</b><div class="m">'+esc(b.bpm)+' BPM · '+esc(b.musical_key)+'<br>'+esc(b.tag)+'</div><div class="pr">от $'+esc(b.price)+'</div><a class="btn" href="https://t.me/'+TG+'">Купить</a>';
+    var disc=d.querySelector(".disc");
+    function start(){
+      if(!src)return;
+      if(cur&&curDisc===disc){if(cur.paused)go(cur,disc);return}
+      stop();cur=new Audio(src);curDisc=disc;cur.preload="auto";
+      cur.onended=function(){disc.classList.remove("on")};go(cur,disc);
+    }
+    disc.onclick=function(){if(cur&&curDisc===disc&&!cur.paused){if(!canHover)stop();return}start()};
+    if(canHover){disc.onmouseenter=start;disc.onmouseleave=function(){if(curDisc===disc)stop()}}
+    list.appendChild(d);
+  });
+}
+fetch(SB+"/rest/v1/beats?select=*&order=created_at.desc",{headers:{apikey:KEY}})
+  .then(function(r){if(!r.ok)throw 0;return r.json()}).then(render)
+  .catch(function(){list.innerHTML='<p class="sub">Не удалось загрузить биты, обнови страницу</p>'});
 </script></body></html>
