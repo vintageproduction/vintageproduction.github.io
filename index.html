@@ -281,6 +281,8 @@ function hdAuth(){$("hd-auth").textContent=U?"Выйти":"Войти"}
 $("hd-auth").onclick=function(){if(U)logoutU();else{$("auth").hidden=false;$("au-m").textContent=""}};
 function startArtists(rows){
   if(!rows.length)return;
+  rows=rows.slice();
+  for(var i=rows.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=rows[i];rows[i]=rows[j];rows[j]=t}
   var box=$("artists");
   var items=rows.map(function(a){return '<div class="it"><img alt="'+esc(a.name)+'" src="'+esc(a.src)+'">'+(a.name?'<div class="nm">'+esc(a.name)+'</div>':'')+'</div>'}).join("");
   box.innerHTML='<div class="tk" style="--d:'+Math.max(20,rows.length*10)+'s">'+items+items+'</div>';
