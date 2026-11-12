@@ -116,7 +116,7 @@ footer{border-top:1px solid var(--line)}
 .tk{display:flex;width:max-content;animation:slide var(--d,60s) linear infinite}
 .it{position:relative;flex:0 0 auto;width:320px;height:320px;margin-right:16px;overflow:hidden}
 @keyframes slide{to{transform:translateX(-50%)}}
-</style></head><body><div class="wrap">
+.it .nm{font-size:30px;padding:26px 12px 10px}</style></head><body><div class="wrap">
   <div class="top">
     <div class="logo">Vintage <i>Beats</i></div>
     <div><a href="#beats">Биты</a><a href="#lic">Цены</a><a href="#buy">Связь</a><button class="btn" id="hd-auth">Войти</button></div>
@@ -288,7 +288,7 @@ function startArtists(rows){
   box.innerHTML='<div class="tk" style="--d:'+Math.max(20,rows.length*10)+'s">'+items+items+'</div>';
   box.hidden=false;$("hero-s").hidden=false;$("hero-h1").hidden=true;
 }
-var SA=[];for(var q=1;q<=9;q++)SA.push({name:"",src:"a0"+q+".jpg"});
+var SA=["MIYAGI","21 SAVAGE","ENDSPIEL","NBA YOUNGBOY","PLAYBOI CARTI","FUTURE","KENDRICK LAMAR","KANYE WEST","TRAVIS SCOTT"].map(function(n,i){return{name:n,src:"a0"+(i+1)+".jpg"}});
 fetch(SB+"/rest/v1/artists?select=name,image_path&order=created_at.asc",{headers:{apikey:KEY}})
   .then(function(r){return r.ok?r.json():[]}).catch(function(){return[]})
   .then(function(rows){startArtists(SA.concat(rows.map(function(a){return{name:a.name,src:SB+"/storage/v1/object/public/demos/"+a.image_path}})))});
