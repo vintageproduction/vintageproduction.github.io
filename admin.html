@@ -132,7 +132,7 @@ function fill(b){
 }
 function load(){return api("/rest/v1/beats?select=*&order=created_at.desc").then(function(r){rows=r;
   $("lst").innerHTML=rows.map(function(b,i){return '<div class="ar"><span>'+esc(b.name)+(b.audio_path?' 🎧':'')+'</span><span><button data-e="'+i+'" title="Изменить">✎</button><button data-d="'+i+'" title="Удалить">✕</button></span></div>'}).join("")||'<p class="m">Битов пока нет</p>'})}
-function show(){$("login").hidden=true;$("panel").hidden=false;loadArt();loadRev();load().catch(function(e){msg("Ошибка: "+e.message)})}
+function show(){$("login").hidden=true;$("panel").hidden=false;loadArt();loadRev();load().then(openEdit).catch(function(e){msg("Ошибка: "+e.message)})}
 $("go").onclick=function(){
   $("lm").textContent="Вхожу…";
   fetch(SB+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify({email:$("em").value.trim(),password:$("pw").value})})
@@ -167,7 +167,7 @@ $("sv").onclick=function(){
   up.then(function(){return ed?api("/rest/v1/beats?id=eq."+ed.id,{method:"PATCH",headers:JH,body:JSON.stringify(row)},true):api("/rest/v1/beats",{method:"POST",headers:JH,body:JSON.stringify(row)},true)})
   .then(function(){if(f&&old)return api("/storage/v1/object/demos/"+old,{method:"DELETE"},true).catch(function(){})})
   .then(function(){if(cf&&oldc)return api("/storage/v1/object/demos/"+oldc,{method:"DELETE"},true).catch(function(){})})
-  .then(function(){ed=null;fill(null);msg("Готово ✓");return load()})
+  .then(function(){ed=null;fill(null);msg("Готово ✓");if(/[?&]edit=/.test(location.search)){location.href="/";return}return load()})
   .catch(function(e){msg("Ошибка: "+e.message)});
 };
 var arts=[];
@@ -207,6 +207,10 @@ $("rev").onclick=function(e){
   if(ra!==null)api("/rest/v1/reviews?id=eq."+revs[ra].id,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({approved:true})},true).then(loadRev).catch(function(er){msg("Ошибка: "+er.message)});
   if(rd!==null){if(!confirm("Удалить отзыв?"))return;api("/rest/v1/reviews?id=eq."+revs[rd].id,{method:"DELETE"},true).then(loadRev).catch(function(er){msg("Ошибка: "+er.message)})}
 };
+function openEdit(){
+  var id=new URLSearchParams(location.search).get("edit");if(!id)return;
+  for(var i=0;i<rows.length;i++)if(rows[i].id===id){ed=rows[i];fill(ed);msg("Правишь «"+ed.name+"». Новую демку или обложку выбирай, только если хочешь заменить.");window.scrollTo(0,0);break}
+}
 function small(f){return new Promise(function(ok,no){var im=new Image(),u=URL.createObjectURL(f);im.onload=function(){var s=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=600;c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,600,600);URL.revokeObjectURL(u);c.toBlob(function(b){b?ok(b):no(new Error("не удалось обработать картинку"))},"image/jpeg",.85)};im.onerror=function(){no(new Error("не удалось открыть картинку"))};im.src=u})}
 if(ss)show();
 </script></body></html>

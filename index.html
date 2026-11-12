@@ -130,6 +130,17 @@ footer{border-top:1px solid var(--line)}
 #faq details{border-bottom:1px solid var(--line);padding:14px 0}
 #faq summary{cursor:pointer;font-weight:600;font-size:17px}
 #faq details p{color:var(--mute);margin:10px 0 0;line-height:1.6}
+
+.disc{position:relative}
+.disc .pic{position:absolute;inset:5%;border-radius:50%;background-size:cover;background-position:center;z-index:1}
+.disc .pic::after{content:"";position:absolute;inset:0;border-radius:50%;background:repeating-radial-gradient(circle,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.25) 3px 4px),conic-gradient(from 30deg,rgba(255,255,255,.14),rgba(255,255,255,0) 18%,rgba(255,255,255,.1) 50%,rgba(255,255,255,0) 68%,rgba(255,255,255,.14))}
+.disc .lbl{position:relative;z-index:2;width:30%;aspect-ratio:1;border-radius:50%;background:var(--acc);box-shadow:0 0 0 2px rgba(0,0,0,.5);transition:background .4s}
+.disc .lbl::after{content:"";position:absolute;left:50%;top:50%;width:16%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:#0a0a0a}
+.card{position:relative}
+.card .ed{display:none;position:absolute;top:8px;right:8px;width:30px;height:30px;align-items:center;justify-content:center;background:var(--acc);color:#fff;border-radius:2px;text-decoration:none;font-size:16px;z-index:5}
+.card .ed:hover{background:var(--acc2)}
+.adm .card:hover .ed,.adm .card:focus-within .ed{display:flex}
+@media(hover:none){.adm .card .ed{display:flex}}
 </style></head><body><div class="wrap">
   <div class="top">
     <div class="logo">Vintage <i>Beats</i></div>
@@ -219,7 +230,7 @@ var TG="vintage999hustle",IG="https://www.instagram.com/vintage26hustle/",YT="ht
 // YT и TGG: впиши сюда ссылки на YouTube и на группу в Telegram, и кнопки появятся сами
 $("soc").innerHTML=[["Instagram",IG],["YouTube",YT],["Группа в Telegram",TGG]].filter(function(x){return x[1]}).map(function(x){return '<a class="btn o" target="_blank" rel="noopener" href="'+esc(x[1])+'">'+x[0]+'</a>'}).join("");
 $("tg").href="https://t.me/"+TG;
-try{if(localStorage.getItem("vb_sess"))$("gear").hidden=false}catch(e){}$("y").textContent=new Date().getFullYear();
+try{if(localStorage.getItem("vb_sess")){$("gear").hidden=false;document.body.classList.add("adm")}}catch(e){}$("y").textContent=new Date().getFullYear();
 var cur=null,curDisc=null,list=$("list");
 var canHover=window.matchMedia&&matchMedia("(hover:hover)").matches;
 function stop(){if(cur){cur.pause();curDisc.classList.remove("on")}}
@@ -239,8 +250,13 @@ function render(rows){
   rows.forEach(function(b){
     var src=b.audio_path?SB+"/storage/v1/object/public/demos/"+b.audio_path:"";
     var d=document.createElement("div");d.className="card";
-    d.innerHTML='<button class="disc"'+(src?'':' disabled title="Демо скоро"')+'>'+(b.cover_path?'<i class="lbl" style="background-image:url('+SB+'/storage/v1/object/public/demos/'+esc(b.cover_path)+')"></i>':'')+'</button><b>'+esc(b.name)+'</b><div class="m">'+esc(b.bpm)+' BPM · '+esc(b.musical_key)+'<br>'+esc(b.tag)+'</div>'+tagsHtml(b)+'<div class="pr">от $'+OT+'</div><select class="ls">'+LOPTS+'</select><a class="btn buy" href="https://t.me/'+TG+'" target="_blank" rel="noopener">Купить</a>';
+    d.innerHTML='<a class="ed" href="admin.html?edit='+esc(b.id)+'" title="Изменить бит">✎</a><button class="disc"'+(src?'':' disabled title="Демо скоро"')+'>'+(b.cover_path?'<i class="pic" style="background-image:url('+SB+'/storage/v1/object/public/demos/'+esc(b.cover_path)+')"></i><i class="lbl"></i>':'')+'</button><b>'+esc(b.name)+'</b><div class="m">'+esc(b.bpm)+' BPM · '+esc(b.musical_key)+'<br>'+esc(b.tag)+'</div>'+tagsHtml(b)+'<div class="pr">от $'+OT+'</div><select class="ls">'+LOPTS+'</select><a class="btn buy" href="https://t.me/'+TG+'" target="_blank" rel="noopener">Купить</a>';
     var disc=d.querySelector(".disc");
+    if(b.cover_path){
+      var lb=d.querySelector(".lbl"),im=new Image();im.crossOrigin="anonymous";
+      im.onload=function(){var c=avgColor(im);if(c)lb.style.background=c.bg};
+      im.src=SB+"/storage/v1/object/public/demos/"+b.cover_path;
+    }
     var sel=d.querySelector(".ls"),buy=d.querySelector(".buy");
     sel.onchange=function(){buy.textContent=+sel.value===0?"Получить":"Купить"};
     buy.onclick=function(){
@@ -329,6 +345,18 @@ $("au-in").onclick=function(){authDo("in")};
 $("au-up").onclick=function(){authDo("up")};
 function hdAuth(){$("hd-auth").textContent=U?"Выйти":"Войти"}
 $("hd-auth").onclick=function(){if(U)logoutU();else{$("auth").hidden=false;$("au-m").textContent=""}};
+function avgColor(img){
+  try{
+    var c=document.createElement("canvas");c.width=c.height=24;var x=c.getContext("2d");
+    x.drawImage(img,0,0,24,24);var d=x.getImageData(0,0,24,24).data,r=0,g=0,b=0,n=d.length/4,i;
+    for(i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2]}
+    r/=n;g/=n;b/=n;
+    var l=(0.299*r+0.587*g+0.114*b)/255;
+    if(l>.75){var f=.75/l;r*=f;g*=f;b*=f;l=.75}
+    else if(l<.25){var sh=(.25-l)*255;r+=sh;g+=sh;b+=sh;l=.25}
+    return{bg:"rgb("+Math.round(r)+","+Math.round(g)+","+Math.round(b)+")",fg:l<.55?"#fff":"#111"};
+  }catch(e){return null}
+}
 function startArtists(rows){
   if(!rows.length)return;
   rows=rows.slice();
