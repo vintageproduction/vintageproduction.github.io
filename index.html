@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>VINTAGE BEATS — биты на продажу</title><meta name="description" content="Биты на продажу: trap, drill, dark. Vintage Beats."><style>
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>VINTAGE BEATS — биты на продажу</title><meta name="description" content="Биты на продажу: trap, drill, dark. Vintage Beats."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"><style>
 :root{
   color-scheme:light;
   --bg:#f1e4c8;--paper:#f8eed7;--ink:#3b2416;--mute:#7a5d48;--acc:#d9531e;--acc2:#e8a33d;--line:#c9b08a;--vinyl:#1a120d;
@@ -56,7 +56,41 @@ h2{font-size:clamp(26px,5vw,38px);margin:46px 0 6px}
 footer{border-top:2px double var(--line);text-align:center;padding:18px 0 30px;font:12px "Courier New",monospace;text-transform:uppercase;letter-spacing:.14em;color:var(--mute)}
 @media(max-width:700px){.hero{grid-template-columns:1fr;padding-top:28px}.vinyl{max-width:240px;order:-1}.logo{font-size:17px}.top a{margin-left:10px}}
 
-.disc .lbl{width:44%;aspect-ratio:1;border-radius:50%;background-size:cover;background-position:center;box-shadow:0 0 0 2px rgba(0,0,0,.45)}.about{max-width:640px;font-size:18px;line-height:1.6;margin:0 0 18px}#soc .btn{margin:0 8px 8px 0}</style></head><body><div class="wrap">
+.disc .lbl{width:44%;aspect-ratio:1;border-radius:50%;background-size:cover;background-position:center;box-shadow:0 0 0 2px rgba(0,0,0,.45)}.about{max-width:640px;font-size:18px;line-height:1.6;margin:0 0 18px}#soc .btn{margin:0 8px 8px 0}.tags{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:0 0 10px}.tags span{font:11px "Courier New",monospace;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--mute)}
+/* ===== ТЁМНАЯ ТЕМА: drill / dark ===== */
+:root,:root:not([data-theme="light"]){color-scheme:dark;--bg:#0b0b0c;--paper:#151517;--ink:#ecebe8;--mute:#8f8d89;--acc:#d11a2a;--acc2:#ff3b3b;--line:#2a2a2d;--vinyl:#050505}
+body{font-family:Inter,"Segoe UI",system-ui,sans-serif}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(ellipse at 50% -10%,rgba(209,26,42,.22),transparent 55%),radial-gradient(ellipse at 50% 120%,rgba(0,0,0,.9),transparent 60%)}
+body::after{mix-blend-mode:screen;opacity:.05}
+h1,h2,.logo,.plan .p{font-family:Anton,Impact,"Arial Narrow",sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:.03em}
+.hero h1{font-weight:400;line-height:.98}
+.hero h1 em{color:var(--acc);font-style:normal;animation:flick 6s infinite}
+h2::after{content:"";display:block;width:48px;height:3px;background:var(--acc);margin-top:8px}
+.hero small,.sub,.m,.pr,.top a,footer,.btn{font-family:"Space Mono","Courier New",monospace}
+.top{border-bottom:1px solid var(--line)}
+.btn{border-radius:2px;background:var(--acc);color:#fff;transition:background .2s,box-shadow .2s,color .2s,border-color .2s}
+.btn:hover{background:var(--acc2);box-shadow:0 0 18px rgba(209,26,42,.6)}
+.btn.o{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.btn.o:hover{background:transparent;color:var(--acc2);border-color:var(--acc);box-shadow:0 0 14px rgba(209,26,42,.35)}
+.vinyl{background:radial-gradient(circle,transparent 0 31%,rgba(255,255,255,.07) 31.5% 32%,transparent 32.5% 38%,rgba(255,255,255,.05) 38.5% 39%,transparent 39.5% 46%,rgba(255,255,255,.05) 46.5% 47%,transparent 47.5%),conic-gradient(from 20deg,#0a0a0a,#1c1c1e 10%,#0a0a0a 22%,#161617 50%,#0a0a0a 62%,#1c1c1e 80%,#0a0a0a);background-color:var(--vinyl);box-shadow:0 0 70px rgba(209,26,42,.28),0 16px 34px #000;animation-duration:12s}
+.card{border-radius:2px;background:var(--paper);box-shadow:none;animation:rise .6s both;transition:transform .25s,border-color .25s,box-shadow .25s}
+.card:hover{transform:translateY(-4px);border-color:var(--acc);box-shadow:0 0 0 1px var(--acc),0 12px 30px rgba(209,26,42,.25)}
+.disc{background:radial-gradient(circle,var(--acc) 0 22%,transparent 23%),repeating-radial-gradient(circle,#0a0a0a 0 2px,#1a1a1b 3px 4px);background-color:var(--vinyl)}
+.disc.on{box-shadow:0 0 0 3px var(--acc),0 0 28px rgba(209,26,42,.7)}
+.tags span{border-radius:2px;color:var(--mute)}
+.plan{border-radius:2px;background:var(--paper);border:1px solid var(--line)}
+.plan.hot{border:2px solid var(--acc);box-shadow:0 0 30px rgba(209,26,42,.2)}
+.plan .p{color:var(--acc)}
+footer{border-top:1px solid var(--line)}
+.f input{font-family:inherit;border-radius:2px}
+@keyframes flick{0%,90%,100%{opacity:1}91%{opacity:.35}92%{opacity:1}95%{opacity:.5}96%{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+@media(prefers-reduced-motion:reduce){.card,.hero h1 em{animation:none}}
+
+/* подпись на пластинке: крупнее и в две строки вокруг отверстия */
+.vinyl{container-type:inline-size}
+.vinyl::before{content:"VINTAGE\A BEATS";white-space:pre;box-sizing:border-box;width:62%;padding:0;font:400 30px/1.55 Anton,Impact,"Arial Narrow",sans-serif;font-size:9.5cqw;letter-spacing:.14em;text-transform:uppercase;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.35);display:grid;place-items:center;text-align:center}
+</style></head><body><div class="wrap">
   <div class="top">
     <div class="logo">Vintage <i>Beats</i></div>
     <div><a href="#beats">Биты</a><a href="#lic">Цены</a><a href="#buy">Связь</a></div>
@@ -79,9 +113,8 @@ footer{border-top:2px double var(--line);text-align:center;padding:18px 0 30px;f
   </section>
 
   <section id="about">
-    <h2>Обо мне</h2>
+    <h2>Ссылки</h2>
     <div class="sub">Vintage Beats</div>
-    <p class="about">Я битмейкер, делаю биты в стиле trap, drill и dark. Слушай каталог выше, а если нужен звук под твой трек или есть вопросы, пиши мне в Telegram.</p>
     <div id="soc"></div>
   </section>
 
@@ -115,13 +148,18 @@ var cur=null,curDisc=null,list=$("list");
 var canHover=window.matchMedia&&matchMedia("(hover:hover)").matches;
 function stop(){if(cur){cur.pause();curDisc.classList.remove("on")}}
 function go(a,d){var p=a.play();if(p&&p.then){p.then(function(){d.classList.add("on")}).catch(function(){})}else d.classList.add("on")}
+function tagsHtml(b){
+  if(!b.tags)return "";
+  var h=b.tags.split(",").map(function(t){t=t.trim();return t?"<span>#"+esc(t)+"</span>":""}).join("");
+  return h?'<div class="tags">'+h+"</div>":"";
+}
 function render(rows){
   list.innerHTML="";
   if(!rows.length){list.innerHTML='<p class="sub">Скоро здесь появятся новые биты</p>';return}
   rows.forEach(function(b){
     var src=b.audio_path?SB+"/storage/v1/object/public/demos/"+b.audio_path:"";
     var d=document.createElement("div");d.className="card";
-    d.innerHTML='<button class="disc"'+(src?'':' disabled title="Демо скоро"')+'>'+(b.cover_path?'<i class="lbl" style="background-image:url('+SB+'/storage/v1/object/public/demos/'+esc(b.cover_path)+')"></i>':'')+'</button><b>'+esc(b.name)+'</b><div class="m">'+esc(b.bpm)+' BPM · '+esc(b.musical_key)+'<br>'+esc(b.tag)+'</div><div class="pr">от $'+esc(b.price)+'</div><a class="btn" href="https://t.me/'+TG+'">Купить</a>';
+    d.innerHTML='<button class="disc"'+(src?'':' disabled title="Демо скоро"')+'>'+(b.cover_path?'<i class="lbl" style="background-image:url('+SB+'/storage/v1/object/public/demos/'+esc(b.cover_path)+')"></i>':'')+'</button><b>'+esc(b.name)+'</b><div class="m">'+esc(b.bpm)+' BPM · '+esc(b.musical_key)+'<br>'+esc(b.tag)+'</div>'+tagsHtml(b)+'<div class="pr">от $'+esc(b.price)+'</div><a class="btn" href="https://t.me/'+TG+'">Купить</a>';
     var disc=d.querySelector(".disc");
     function start(){
       if(!src)return;
