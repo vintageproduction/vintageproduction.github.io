@@ -107,7 +107,7 @@ footer{border-top:1px solid var(--line)}
 .artists .nm{position:absolute;left:0;right:0;bottom:0;padding:30px 14px 12px;background:linear-gradient(transparent,rgba(0,0,0,.88));font:400 clamp(28px,5vw,46px)/1 Anton,Impact,sans-serif;text-transform:uppercase;letter-spacing:.03em;color:#fff}
 @media(max-width:560px){.top div a{display:none}}
 @media(prefers-reduced-motion:reduce){.artists .sl{transition:none}}
-</style></head><body><div class="wrap">
+.artists{max-width:420px;aspect-ratio:1/1}</style></head><body><div class="wrap">
   <div class="top">
     <div class="logo">Vintage <i>Beats</i></div>
     <div><a href="#beats">Биты</a><a href="#lic">Цены</a><a href="#buy">Связь</a><button class="btn" id="hd-auth">Войти</button></div>
@@ -237,7 +237,7 @@ function logoutU(){
 }
 function renderForm(){
   var f=$("rv-form");hdAuth();
-  if(!U){f.innerHTML='<button class="btn" id="rv-login">Войти, чтобы оставить отзыв</button>';$("rv-login").onclick=function(){$("auth").hidden=false;$("au-m").textContent=""};return}
+  if(!U){f.innerHTML='<p class="m">Чтобы оставить отзыв, нажми «Войти» вверху страницы.</p>';return}
   f.innerHTML='<p class="m">Проверяю…</p>';
   uapi("/rest/v1/reviews?select=approved&user_id=eq."+U.id).then(function(r){
     if(r.length){
@@ -274,14 +274,16 @@ $("hd-auth").onclick=function(){if(U)logoutU();else{$("auth").hidden=false;$("au
 function startArtists(rows){
   if(!rows.length)return;
   var box=$("artists");
-  box.innerHTML=rows.map(function(a,i){return '<div class="sl'+(i?'':' on')+'"><img alt="'+esc(a.name)+'" src="'+SB+'/storage/v1/object/public/demos/'+esc(a.image_path)+'"><div class="nm">'+esc(a.name)+'</div></div>'}).join("");
+  box.innerHTML=rows.map(function(a,i){return '<div class="sl'+(i?'':' on')+'"><img alt="'+esc(a.name)+'" src="'+esc(a.src)+'">'+(a.name?'<div class="nm">'+esc(a.name)+'</div>':'')+'</div>'}).join("");
   box.hidden=false;$("hero-s").hidden=false;$("hero-h1").hidden=true;
   var sl=box.querySelectorAll(".sl"),k=0;
   if(sl.length>1&&!(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches))
     setInterval(function(){sl[k].classList.remove("on");k=(k+1)%sl.length;sl[k].classList.add("on")},3500);
 }
+var SA=[];for(var q=1;q<=9;q++)SA.push({name:"",src:"a0"+q+".jpg"});
 fetch(SB+"/rest/v1/artists?select=name,image_path&order=created_at.asc",{headers:{apikey:KEY}})
-  .then(function(r){if(!r.ok)throw 0;return r.json()}).then(startArtists).catch(function(){});
+  .then(function(r){return r.ok?r.json():[]}).catch(function(){return[]})
+  .then(function(rows){startArtists(SA.concat(rows.map(function(a){return{name:a.name,src:SB+"/storage/v1/object/public/demos/"+a.image_path}})))});
 renderForm();loadRv();
 
 var ALL=[],ACT="";
