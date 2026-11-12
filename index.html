@@ -161,6 +161,19 @@ footer{border-top:1px solid var(--line)}
 @media(max-width:700px){.vwrap{max-width:240px;order:-1}}
 .smoke{position:fixed;inset:0;pointer-events:none;z-index:45;overflow:hidden}
 .smk{position:absolute;left:0;top:0;border-radius:50%;background:radial-gradient(circle,rgba(228,228,228,.8) 0%,rgba(165,165,165,.5) 45%,rgba(120,120,120,0) 72%);filter:blur(2px)}
+/* ===== VHS ===== */
+.vhs{position:fixed;inset:0;pointer-events:none;z-index:-1;overflow:hidden}
+.vhs::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,rgba(0,0,0,0) 1px 3px),repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,rgba(255,255,255,0) 1px 9px)}
+.vhs::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%)}
+.vhs-n{position:absolute;inset:-50%;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:.1;mix-blend-mode:screen;animation:vnoise 30s linear infinite}
+@keyframes vnoise{0%{transform:translate(0,0)}50%{transform:translate(-6%,4%)}100%{transform:translate(0,0)}}
+.vhs-osd{position:absolute;left:18px;bottom:calc(14px + env(safe-area-inset-bottom,0px));font:15px "Space Mono","Courier New",monospace;color:#fff;opacity:.6;letter-spacing:.1em;text-shadow:2px 0 rgba(255,0,0,.55),-2px 0 rgba(0,255,255,.45)}
+.vhs-osd b{margin-right:12px;font-weight:400}
+#vhs-t{background:none;border:1px solid var(--line);color:var(--mute);font:10px "Space Mono","Courier New",monospace;padding:3px 8px;margin-left:12px;cursor:pointer;border-radius:2px;text-transform:uppercase;letter-spacing:.1em}
+#vhs-t.on{border-color:var(--acc);color:var(--acc2)}
+body::after{z-index:-1}
+.vhs-x{position:absolute;opacity:0;background:linear-gradient(rgba(255,255,255,0),rgba(255,255,255,.6) 12%,rgba(255,255,255,.45) 88%,rgba(255,255,255,0))}
+.vhs-d{position:absolute;opacity:0;border-radius:50%;background:rgba(255,255,255,.55)}
 </style></head><body><div class="wrap">
   <div class="top">
     <div class="logo">Vintage <i>Beats</i></div>
@@ -238,12 +251,13 @@ footer{border-top:1px solid var(--line)}
     <a class="btn" id="tg" href="#">Telegram</a>
   </section>
 </div>
+<div class="vhs" id="vhs" aria-hidden="true"><i class="vhs-n"></i><div class="vhs-osd"><b>▶ PLAY</b><span id="vhs-tc">00:00:00</span></div></div>
 <div id="toast" class="toast" hidden></div>
 <div id="auth" class="au" hidden><div class="au-in"><button id="au-x" class="au-x" aria-label="Закрыть">✕</button>
 <h3>Вход и регистрация</h3><p class="m">Войди или зарегистрируйся по почте. Почта нужна только для входа и на сайте не показывается.</p>
 <input id="au-e" type="email" placeholder="Почта" autocomplete="username"><input id="au-p" type="password" placeholder="Пароль (от 8 символов)" autocomplete="current-password">
 <button class="btn" id="au-in">Войти</button><button class="btn o" id="au-up">Регистрация</button><div id="au-m" class="m"></div></div></div>
-<footer>© <span id="y"></span> Vintage Beats <a id="gear" hidden href="admin.html" title="Админка" aria-label="Админка" style="text-decoration:none;opacity:.35;margin-left:10px">⚙</a></footer><script>var SB="https://lyejwcetufbwjyeihjbg.supabase.co",KEY="sb_publishable_U6F7QYuQfUTkLhGN7tYweg_GXjfflzo";
+<footer>© <span id="y"></span> Vintage Beats <a id="gear" hidden href="admin.html" title="Админка" aria-label="Админка" style="text-decoration:none;opacity:.35;margin-left:10px">⚙</a><button id="vhs-t" type="button" title="VHS">VHS</button></footer><script>var SB="https://lyejwcetufbwjyeihjbg.supabase.co",KEY="sb_publishable_U6F7QYuQfUTkLhGN7tYweg_GXjfflzo";
 var $=function(i){return document.getElementById(i)};
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var TG="vintage999hustle",IG="https://www.instagram.com/vintage26hustle/",YT="https://www.youtube.com/@vintagehustle",TGG="https://t.me/vintageprod";
@@ -493,6 +507,42 @@ fetch(SB+"/rest/v1/beats?select=*&order=created_at.desc",{headers:{apikey:KEY}})
   .then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(r){ALL=r;show()})
   .catch(function(){list.innerHTML='<p class="sub">Не удалось загрузить биты, обнови страницу</p>'});
 
+/* ---- VHS: переключатель, таймкод, редкие «сбои» ---- */
+(function(){
+  var v=$("vhs"),t=$("vhs-t"),on=true;
+  try{if(localStorage.getItem("vb_vhs")==="0")on=false}catch(e){}
+  function ap(){v.hidden=!on;t.classList.toggle("on",on);t.textContent="VHS "+(on?"●":"○")}
+  ap();
+  t.onclick=function(){on=!on;try{localStorage.setItem("vb_vhs",on?"1":"0")}catch(e){}ap()};
+  var tc=$("vhs-tc"),s0=Date.now();
+  function p2(x){return(x<10?"0":"")+x}
+  setInterval(function(){if(!on)return;var n=Math.floor((Date.now()-s0)/1000);tc.textContent=p2(Math.floor(n/3600))+":"+p2(Math.floor(n/60)%60)+":"+p2(n%60)},1000);
+  // царапины и пыль как на старой плёнке: вспыхивают на доли секунды и пропадают, двигаются рывками
+  function film(){
+    if(on&&!document.hidden&&v.childNodes.length<40){
+      var W=window.innerWidth,H=window.innerHeight,k=Math.random();
+      var e=document.createElement("i"),dur,fr,dx=(Math.random()-.5)*16;
+      if(k<.62){
+        var len=H*(.3+Math.random()*.7);
+        e.className="vhs-x";
+        e.style.cssText="left:"+(Math.random()*W)+"px;top:"+(Math.random()*(H-len))+"px;height:"+len+"px;width:"+(Math.random()<.2?2:1)+"px";
+        dur=130+Math.random()*420;
+        fr=[{opacity:0,transform:"translateX(0)"},{opacity:.9,transform:"translateX("+dx*.3+"px)",offset:.2},{opacity:.5,transform:"translateX("+dx*.65+"px)",offset:.6},{opacity:0,transform:"translateX("+dx+"px)"}];
+      }else{
+        var sz=1+Math.random()*3;
+        e.className="vhs-d";
+        e.style.cssText="left:"+(Math.random()*W)+"px;top:"+(Math.random()*H)+"px;width:"+sz+"px;height:"+sz+"px";
+        dur=90+Math.random()*260;
+        fr=[{opacity:0},{opacity:.85,offset:.3},{opacity:0}];
+      }
+      v.appendChild(e);
+      var a=e.animate(fr,{duration:dur,easing:"steps(4)"});
+      a.onfinish=function(){e.remove()};
+    }
+    setTimeout(film,120+Math.random()*(Math.random()<.2?1400:520));
+  }
+  film();
+})();
 /* ---- пасхалка: винил газует, сплющивается и уезжает с сайта, потом возвращается ---- */
 (function(){
   var vw=$("vwrap"),vin=vw&&vw.querySelector(".vinyl");
