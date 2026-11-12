@@ -103,6 +103,7 @@ footer{border-top:1px solid var(--line)}
 <label>Обложка для пластинки (любая картинка, станет круглой)<input id="a-cover" type="file" accept="image/*"></label>
 <button class="btn" id="sv">Добавить</button><button class="btn o" id="cn" hidden>Отмена</button><div id="am" class="m"></div>
 <h2 style="margin:26px 0 6px;font-size:24px">Мои биты</h2><div id="lst"></div>
+<h2 style="margin:26px 0 6px;font-size:24px">Отзывы</h2><div id="rev"></div>
 <p><a href="/" style="color:var(--mute)">← на сайт</a> · <a href="#" id="out" style="color:var(--mute)">выйти</a></p>
 </div></div><script>var SB="https://lyejwcetufbwjyeihjbg.supabase.co",KEY="sb_publishable_U6F7QYuQfUTkLhGN7tYweg_GXjfflzo";
 var $=function(i){return document.getElementById(i)};
@@ -128,12 +129,12 @@ function fill(b){
 }
 function load(){return api("/rest/v1/beats?select=*&order=created_at.desc").then(function(r){rows=r;
   $("lst").innerHTML=rows.map(function(b,i){return '<div class="ar"><span>'+esc(b.name)+(b.audio_path?' 🎧':'')+'</span><span><button data-e="'+i+'" title="Изменить">✎</button><button data-d="'+i+'" title="Удалить">✕</button></span></div>'}).join("")||'<p class="m">Битов пока нет</p>'})}
-function show(){$("login").hidden=true;$("panel").hidden=false;load().catch(function(e){msg("Ошибка: "+e.message)})}
+function show(){$("login").hidden=true;$("panel").hidden=false;loadRev();load().catch(function(e){msg("Ошибка: "+e.message)})}
 $("go").onclick=function(){
   $("lm").textContent="Вхожу…";
   fetch(SB+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify({email:$("em").value.trim(),password:$("pw").value})})
   .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.msg||j.error_description||"неверная почта или пароль");return j})})
-  .then(function(j){saveSess(j);show()}).catch(function(e){$("lm").textContent="Ошибка: "+e.message});
+  .then(function(j){if(!j.user||j.user.email!=="vintage.kid999@gmail.com")throw new Error("это не аккаунт админа");saveSess(j);show()}).catch(function(e){$("lm").textContent="Ошибка: "+e.message});
 };
 $("out").onclick=function(e){e.preventDefault();localStorage.removeItem("vb_sess");location.reload()};
 $("cn").onclick=function(){ed=null;fill(null);msg("")};
@@ -165,6 +166,18 @@ $("sv").onclick=function(){
   .then(function(){if(cf&&oldc)return api("/storage/v1/object/demos/"+oldc,{method:"DELETE"},true).catch(function(){})})
   .then(function(){ed=null;fill(null);msg("Готово ✓");return load()})
   .catch(function(e){msg("Ошибка: "+e.message)});
+};
+var revs=[];
+function loadRev(){
+  return api("/rest/v1/reviews?select=*&order=created_at.desc",{},true).then(function(r){
+    revs=r;
+    $("rev").innerHTML=r.map(function(x,i){return '<div class="ar" style="display:block"><b>'+esc(x.author)+'</b> '+"★".repeat(x.rating)+(x.approved?' <span class="m">· опубликован</span>':' <span class="m" style="color:var(--acc2)">· на проверке</span>')+'<div>'+esc(x.body)+'</div><div>'+(x.approved?'':'<button data-ra="'+i+'">✓ одобрить</button>')+'<button data-rd="'+i+'">✕ удалить</button></div></div>'}).join("")||'<p class="m">Отзывов пока нет</p>';
+  }).catch(function(e){$("rev").textContent="Ошибка: "+e.message});
+}
+$("rev").onclick=function(e){
+  var ra=e.target.getAttribute("data-ra"),rd=e.target.getAttribute("data-rd");
+  if(ra!==null)api("/rest/v1/reviews?id=eq."+revs[ra].id,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({approved:true})},true).then(loadRev).catch(function(er){msg("Ошибка: "+er.message)});
+  if(rd!==null){if(!confirm("Удалить отзыв?"))return;api("/rest/v1/reviews?id=eq."+revs[rd].id,{method:"DELETE"},true).then(loadRev).catch(function(er){msg("Ошибка: "+er.message)})}
 };
 function small(f){return new Promise(function(ok,no){var im=new Image(),u=URL.createObjectURL(f);im.onload=function(){var s=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=600;c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,600,600);URL.revokeObjectURL(u);c.toBlob(function(b){b?ok(b):no(new Error("не удалось обработать картинку"))},"image/jpeg",.85)};im.onerror=function(){no(new Error("не удалось открыть картинку"))};im.src=u})}
 if(ss)show();

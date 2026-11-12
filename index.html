@@ -90,7 +90,16 @@ footer{border-top:1px solid var(--line)}
 /* подпись на пластинке: крупнее и в две строки вокруг отверстия */
 .vinyl{container-type:inline-size}
 .vinyl::before{content:"VINTAGE\A BEATS";white-space:pre;box-sizing:border-box;width:62%;padding:0;font:400 30px/1.55 Anton,Impact,"Arial Narrow",sans-serif;font-size:9.5cqw;letter-spacing:.14em;text-transform:uppercase;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.35);display:grid;place-items:center;text-align:center}
-.tgc{cursor:pointer;transition:color .2s,border-color .2s}.tgc:hover{color:var(--acc2);border-color:var(--acc)}.fbar{margin:0 0 16px;font:13px "Space Mono","Courier New",monospace;color:var(--mute)}.fbar b{color:var(--acc2)}.fbar .btn{padding:6px 12px;font-size:11px;margin:0 0 0 10px}</style></head><body><div class="wrap">
+.tgc{cursor:pointer;transition:color .2s,border-color .2s}.tgc:hover{color:var(--acc2);border-color:var(--acc)}.fbar{margin:0 0 16px;font:13px "Space Mono","Courier New",monospace;color:var(--mute)}.fbar b{color:var(--acc2)}.fbar .btn{padding:6px 12px;font-size:11px;margin:0 0 0 10px}.rv{border:1px solid var(--line);background:var(--paper);padding:16px;margin-bottom:12px;border-radius:2px}
+.rv p{margin:6px 0;font-size:16px}.rs{color:var(--acc2);letter-spacing:.1em}
+.rvf{max-width:520px}
+.rvf input,.rvf textarea,.rvf select,.au-in input{display:block;width:100%;margin:0 0 8px;padding:10px;border:1px solid var(--line);border-radius:2px;background:var(--paper);color:var(--ink);font:16px Inter,system-ui,sans-serif}
+.au{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px}
+.au-in{position:relative;background:var(--paper);border:1px solid var(--line);padding:24px;width:100%;max-width:400px;border-radius:2px}
+.au-in h3{margin:0 0 6px;font-family:Anton,Impact,sans-serif;font-weight:400;text-transform:uppercase;font-size:24px}
+.au-x{position:absolute;top:8px;right:10px;background:none;border:0;color:var(--mute);font-size:20px;cursor:pointer}
+[hidden]{display:none!important}
+</style></head><body><div class="wrap">
   <div class="top">
     <div class="logo">Vintage <i>Beats</i></div>
     <div><a href="#beats">Биты</a><a href="#lic">Цены</a><a href="#buy">Связь</a></div>
@@ -111,6 +120,13 @@ footer{border-top:1px solid var(--line)}
     <div class="sub">Наведи на диск или нажми, чтобы послушать</div>
     <div id="fbar" class="fbar" hidden></div>
     <div class="grid" id="list"></div>
+  </section>
+
+  <section id="reviews">
+    <h2>Отзывы</h2>
+    <div class="sub">Что говорят артисты</div>
+    <div id="rv-list"></div>
+    <div id="rv-form"></div>
   </section>
 
   <section id="about">
@@ -138,6 +154,10 @@ footer{border-top:1px solid var(--line)}
     <a class="btn" id="tg" href="#">Telegram</a>
   </section>
 </div>
+<div id="auth" class="au" hidden><div class="au-in"><button id="au-x" class="au-x" aria-label="Закрыть">✕</button>
+<h3>Вход для отзывов</h3><p class="m">Войди или зарегистрируйся по почте. Почта нужна только для входа и на сайте не показывается.</p>
+<input id="au-e" type="email" placeholder="Почта" autocomplete="username"><input id="au-p" type="password" placeholder="Пароль (от 8 символов)" autocomplete="current-password">
+<button class="btn" id="au-in">Войти</button><button class="btn o" id="au-up">Регистрация</button><div id="au-m" class="m"></div></div></div>
 <footer>© <span id="y"></span> Vintage Beats <a id="gear" hidden href="admin.html" title="Админка" aria-label="Админка" style="text-decoration:none;opacity:.35;margin-left:10px">⚙</a></footer><script>var SB="https://lyejwcetufbwjyeihjbg.supabase.co",KEY="sb_publishable_U6F7QYuQfUTkLhGN7tYweg_GXjfflzo";
 var $=function(i){return document.getElementById(i)};
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -174,6 +194,74 @@ function render(rows){
     list.appendChild(d);
   });
 }
+/* ---- пользователи и отзывы ---- */
+var U=null;try{U=JSON.parse(localStorage.getItem("vb_user"))}catch(e){}
+function saveU(j){U={a:j.access_token,r:j.refresh_token,x:Math.floor(Date.now()/1000)+(j.expires_in||3600),id:(j.user&&j.user.id)||(U&&U.id)};localStorage.setItem("vb_user",JSON.stringify(U))}
+function utoken(){
+  if(!U)return Promise.reject(new Error("нужно войти"));
+  if(U.x>Date.now()/1000+60)return Promise.resolve(U.a);
+  return fetch(SB+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:U.r})})
+    .then(function(r){if(!r.ok){U=null;localStorage.removeItem("vb_user");throw new Error("сессия истекла, войди снова")}return r.json()})
+    .then(function(j){saveU(j);return U.a});
+}
+function uapi(path,opt){
+  opt=opt||{};
+  return utoken().then(function(t){opt.headers=Object.assign({apikey:KEY,Authorization:"Bearer "+t},opt.headers||{});return fetch(SB+path,opt)})
+  .then(function(r){if(!r.ok)return r.text().then(function(x){var e=new Error(r.status+": "+x.slice(0,140));e.status=r.status;throw e});return r.text().then(function(t){return t?JSON.parse(t):null})});
+}
+function ru(m){m=String(m);
+  if(/Invalid login/i.test(m))return"Неверная почта или пароль";
+  if(/already registered/i.test(m))return"Эта почта уже зарегистрирована, нажми «Войти»";
+  if(/rate limit/i.test(m))return"Слишком много попыток, попробуй позже";
+  if(/Password should|weak/i.test(m))return"Пароль слишком простой, придумай длиннее";
+  return m}
+function stars(n){n=Math.max(1,Math.min(5,+n||5));return"★★★★★".slice(0,n)+"☆☆☆☆☆".slice(0,5-n)}
+function loadRv(){
+  fetch(SB+"/rest/v1/reviews?select=author,rating,body&approved=eq.true&order=created_at.desc&limit=50",{headers:{apikey:KEY}})
+  .then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(rows){
+    $("rv-list").innerHTML=rows.length?rows.map(function(x){return '<div class="rv"><div class="rs">'+stars(x.rating)+'</div><p>'+esc(x.body)+'</p><div class="m">— '+esc(x.author)+'</div></div>'}).join(""):'<p class="sub">Отзывов пока нет. Будь первым!</p>';
+  }).catch(function(){$("rv-list").innerHTML=""});
+}
+function logoutU(){
+  if(U)fetch(SB+"/auth/v1/logout",{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+U.a}}).catch(function(){});
+  U=null;localStorage.removeItem("vb_user");renderForm();
+}
+function renderForm(){
+  var f=$("rv-form");
+  if(!U){f.innerHTML='<button class="btn" id="rv-login">Войти, чтобы оставить отзыв</button>';$("rv-login").onclick=function(){$("auth").hidden=false;$("au-m").textContent=""};return}
+  f.innerHTML='<p class="m">Проверяю…</p>';
+  uapi("/rest/v1/reviews?select=approved&user_id=eq."+U.id).then(function(r){
+    if(r.length){
+      f.innerHTML='<p class="m">'+(r[0].approved?"Твой отзыв опубликован. Спасибо!":"Спасибо! Твой отзыв на проверке и скоро появится.")+'</p><button class="btn o" id="rv-out">Выйти</button>';
+    }else{
+      f.innerHTML='<div class="rvf"><input id="rv-n" maxlength="40" placeholder="Твоё имя или ник"><select id="rv-r"><option value="5">★★★★★ 5</option><option value="4">★★★★☆ 4</option><option value="3">★★★☆☆ 3</option><option value="2">★★☆☆☆ 2</option><option value="1">★☆☆☆☆ 1</option></select><textarea id="rv-b" maxlength="600" rows="4" placeholder="Что скажешь о битах?"></textarea><button class="btn" id="rv-send">Отправить</button><button class="btn o" id="rv-out">Выйти</button><div id="rv-m" class="m"></div></div>';
+      $("rv-send").onclick=function(){
+        var n=$("rv-n").value.trim(),b=$("rv-b").value.trim();
+        if(!n||b.length<3){$("rv-m").textContent="Заполни имя и текст отзыва";return}
+        $("rv-m").textContent="Отправляю…";
+        uapi("/rest/v1/reviews",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({user_id:U.id,author:n,rating:+$("rv-r").value,body:b})})
+          .then(renderForm).catch(function(e){$("rv-m").textContent=e.status===409?"Ты уже оставлял отзыв":"Ошибка: "+ru(e.message)});
+      };
+    }
+    $("rv-out").onclick=logoutU;
+  }).catch(function(e){f.innerHTML='<p class="m">Ошибка: '+esc(ru(e.message))+'</p><button class="btn o" id="rv-out">Выйти</button>';$("rv-out").onclick=logoutU});
+}
+function authDo(mode){
+  var em=$("au-e").value.trim(),pw=$("au-p").value;
+  if(!em||pw.length<8){$("au-m").textContent="Нужны почта и пароль (минимум 8 символов)";return}
+  $("au-m").textContent="Секунду…";
+  fetch(SB+(mode==="up"?"/auth/v1/signup":"/auth/v1/token?grant_type=password"),{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify({email:em,password:pw})})
+  .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.msg||j.error_description||j.message||"ошибка");return j})})
+  .then(function(j){
+    if(j.access_token){saveU(j);$("auth").hidden=true;renderForm()}
+    else $("au-m").textContent="Мы отправили письмо. Подтверди почту и войди.";
+  }).catch(function(e){$("au-m").textContent="Ошибка: "+ru(e.message)});
+}
+$("au-x").onclick=function(){$("auth").hidden=true};
+$("au-in").onclick=function(){authDo("in")};
+$("au-up").onclick=function(){authDo("up")};
+renderForm();loadRv();
+
 var ALL=[],ACT="";
 function hasTag(b,t){return (b.tags||"").split(",").some(function(x){return x.trim().toLowerCase()===t.toLowerCase()})}
 function show(){
