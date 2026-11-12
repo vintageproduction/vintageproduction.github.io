@@ -68,7 +68,7 @@ footer{border-top:2px double var(--line);text-align:center;padding:18px 0 30px;f
 <div id="login" class="f"><input id="em" type="email" placeholder="Почта" autocomplete="username"><input id="pw" type="password" placeholder="Пароль" autocomplete="current-password"><button class="btn" id="go">Войти</button><div id="lm" class="m"></div></div>
 <div id="panel" hidden class="f">
 <h2 id="ph" style="margin:0 0 10px;font-size:24px">Добавить бит</h2>
-<input id="a-n" placeholder="Название"><input id="a-bpm" type="number" placeholder="BPM"><input id="a-key" placeholder="Тональность (F# min)"><input id="a-tag" placeholder="Жанр (trap / dark)"><input id="a-price" type="number" placeholder="Цена от, $">
+<input id="a-n" placeholder="Название"><input id="a-bpm" type="number" placeholder="BPM"><input id="a-key" placeholder="Тональность (F# min)"><input id="a-tag" placeholder="Жанр (trap / dark)"><input id="a-tags" placeholder="Теги через запятую (dark, aggressive, melodic)"><input id="a-price" type="number" placeholder="Цена от, $">
 <label>Демка (mp3, лучше 30–90 сек с тегом, до 45 МБ)<input id="a-file" type="file" accept="audio/*"></label>
 <label>Обложка для пластинки (любая картинка, станет круглой)<input id="a-cover" type="file" accept="image/*"></label>
 <button class="btn" id="sv">Добавить</button><button class="btn o" id="cn" hidden>Отмена</button><div id="am" class="m"></div>
@@ -93,7 +93,7 @@ function api(path,opt,auth){
 var rows=[],ed=null;
 function msg(t){$("am").textContent=t}
 function fill(b){
-  $("a-n").value=b?b.name:"";$("a-bpm").value=b?b.bpm:"";$("a-key").value=b?b.musical_key:"";$("a-tag").value=b?b.tag:"";$("a-price").value=b?b.price:"";$("a-file").value="";$("a-cover").value="";
+  $("a-n").value=b?b.name:"";$("a-bpm").value=b?b.bpm:"";$("a-key").value=b?b.musical_key:"";$("a-tag").value=b?b.tag:"";$("a-tags").value=b?(b.tags||""):"";$("a-price").value=b?b.price:"";$("a-file").value="";$("a-cover").value="";
   $("sv").textContent=b?"Сохранить изменения":"Добавить";$("ph").textContent=b?"Изменить бит":"Добавить бит";$("cn").hidden=!b;
 }
 function load(){return api("/rest/v1/beats?select=*&order=created_at.desc").then(function(r){rows=r;
@@ -122,7 +122,7 @@ $("sv").onclick=function(){
   var n=$("a-n").value.trim(),f=$("a-file").files[0];
   if(!n){msg("Введи название");return}
   if(f&&f.size>45*1048576){msg("Файл больше 45 МБ, сделай демку короче");return}
-  var row={name:n,bpm:$("a-bpm").value||"-",musical_key:$("a-key").value||"-",tag:$("a-tag").value||"beat",price:$("a-price").value||"20"};
+  var row={name:n,bpm:$("a-bpm").value||"-",musical_key:$("a-key").value||"-",tag:$("a-tag").value||"beat",tags:$("a-tags").value.split(",").map(function(t){return t.trim().replace(/^#/,"")}).filter(Boolean).join(", "),price:$("a-price").value||"20"};
   var old=ed&&ed.audio_path,JH={"Content-Type":"application/json"};
   msg(f?"Загружаю демку…":"Сохраняю…");
   var up=Promise.resolve();
