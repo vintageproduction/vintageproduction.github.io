@@ -43,7 +43,7 @@ h2{font-size:clamp(26px,5vw,38px);margin:46px 0 6px}
 .disc{width:100%;max-width:150px;aspect-ratio:1;border-radius:50%;border:0;padding:0;margin:4px auto 12px;display:grid;place-items:center;cursor:pointer;color:#fff7e6;font-size:20px;background:
  radial-gradient(circle,var(--acc) 0 22%,transparent 23%),repeating-radial-gradient(circle,#1a120d 0 2px,#261a12 3px 4px);background-color:var(--vinyl)}
 .disc:disabled{cursor:default;opacity:.85}
-.disc.on{animation:spin 5s linear infinite}
+.disc{animation:spin 5s linear infinite;animation-play-state:paused}.disc.on{animation-play-state:running}
 .card b{display:block;font-size:19px}
 .card .m{font:12px "Courier New",monospace;color:var(--mute);margin:2px 0 10px}
 .card .pr{font:700 16px "Courier New",monospace;margin-bottom:10px}
@@ -150,6 +150,13 @@ footer{border-top:1px solid var(--line)}
 .ctl .tb,.ctl .vb{fill:#fff;stroke:var(--acc);stroke-width:1}
 .ctl .th{fill:none;stroke:transparent;stroke-width:12;pointer-events:stroke;cursor:pointer}
 .ctl .vh{fill:transparent;pointer-events:all;cursor:ns-resize}
+.ctl .pb{pointer-events:all;cursor:pointer}
+.ctl .pbc{fill:rgba(0,0,0,.6);stroke:rgba(255,255,255,.85);stroke-width:1}
+.ctl .pb:hover .pbc{stroke:var(--acc2)}
+.ctl .ip{display:none;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round}
+.ctl .ipl{fill:#fff}
+.disc.on + .ctl .ip{display:inline}
+.disc.on + .ctl .ipl{display:none}
 </style></head><body><div class="wrap">
   <div class="top">
     <div class="logo">Vintage <i>Beats</i></div>
@@ -260,7 +267,8 @@ function ctlSvg(){
    +'<path class="tt" d="'+arcD(TR,-62,62)+'"/><path class="tp" d=""/><circle class="tb" r="3.2"/>'
    +'<path class="th" d="'+arcD(TR,-62,62)+'"/>'
    +'<path class="vt" d="'+arcD(VR,-135,135)+'"/><path class="vp" d=""/><circle class="vb" r="2.6"/>'
-   +'<circle class="vh" cx="50" cy="50" r="22"/></svg>';
+   +'<circle class="vh" cx="50" cy="50" r="22"/>'
+   +'<g class="pb"><circle class="pbc" cx="50" cy="50" r="9"/><path class="ip" d="M47 45.5V54.5M53 45.5V54.5"/><path class="ipl" d="M47.5 45.2L47.5 54.8L55.5 50Z"/></g></svg>';
 }
 function bindDrag(el,fn,end){
   el.addEventListener("pointerdown",function(e){
@@ -277,6 +285,24 @@ function setVol(v){
   try{localStorage.setItem("vb_vol",String(VOL))}catch(e){}
   CTLS.forEach(function(c){c.vol()});
   if(cur)cur.volume=VOL;
+}
+function chew(a,disc,done){
+  var t0=performance.now(),D=950,an=null;
+  try{an=disc.getAnimations().filter(function(x){return x.animationName==="spin"})[0]||null}catch(e){}
+  try{a.preservesPitch=false;a.webkitPreservesPitch=false;a.mozPreservesPitch=false}catch(e){}
+  function fin(){
+    try{a.playbackRate=1;a.preservesPitch=true;a.webkitPreservesPitch=true;a.mozPreservesPitch=true}catch(e){}
+    if(an)an.playbackRate=1;
+    if(done)done();
+  }
+  function f(now){
+    if(a.paused){fin();return}
+    var k=Math.min(1,(now-t0)/D),r=(Math.pow(1-k,2)*.94+.06)*(1+.06*Math.sin(k*34)*(1-k));
+    r=Math.max(.0625,r);a.playbackRate=r;if(an)an.playbackRate=r;
+    if(k<1)requestAnimationFrame(f);
+    else{a.pause();disc.classList.remove("on");fin()}
+  }
+  requestAnimationFrame(f);
 }
 function tagsHtml(b){
   if(!b.tags)return "";
@@ -305,7 +331,7 @@ function render(rows){CTLS=[];
       buy.href="https://t.me/"+TG+"?text="+encodeURIComponent(txt);
       if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){toast("Если сообщение не подставилось, оно скопировано, вставь его в чат")}).catch(function(){});
     };
-    var wrap=d.querySelector(".dwrap"),svg=d.querySelector(".ctl"),pend=null,dragging=false,ctl={prog:function(){},vol:function(){}};
+    var wrap=d.querySelector(".dwrap"),svg=d.querySelector(".ctl"),pend=null,dragging=false,chewing=false,ctl={prog:function(){},vol:function(){}};
     function setProg(p){ctl.prog(p)}
     function seekTo(p){
       if(!src)return;
@@ -322,6 +348,13 @@ function render(rows){CTLS=[];
       var vh=svg.querySelector(".vh");
       bindDrag(vh,function(e){setVol((clamp(ang(e,svg),-135,135)+135)/270)});
       vh.addEventListener("wheel",function(e){e.preventDefault();setVol(VOL+(e.deltaY<0?.05:-.05))},{passive:false});
+      svg.querySelector(".pb").addEventListener("click",function(e){
+        e.stopPropagation();
+        if(cur&&curDisc===disc&&!cur.paused){
+          if(chewing)return;
+          chewing=true;chew(cur,disc,function(){chewing=false});
+        }else start();
+      });
     }
     function start(){
       if(!src)return;
@@ -335,7 +368,11 @@ function render(rows){CTLS=[];
       go(a,disc);
     }
     disc.onclick=function(){if(cur&&curDisc===disc&&!cur.paused){if(!canHover)stop();return}start()};
-    if(canHover){wrap.onmouseenter=start;wrap.onmouseleave=function(){if(curDisc===disc)stop()}}
+    if(canHover){
+      var lv=0;
+      d.onmouseenter=function(){clearTimeout(lv);start()};
+      d.onmouseleave=function(){lv=setTimeout(function(){if(curDisc===disc)stop()},250)};
+    }
     list.appendChild(d);
   });
 }
