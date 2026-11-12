@@ -70,6 +70,7 @@ footer{border-top:2px double var(--line);text-align:center;padding:18px 0 30px;f
 <h2 id="ph" style="margin:0 0 10px;font-size:24px">Добавить бит</h2>
 <input id="a-n" placeholder="Название"><input id="a-bpm" type="number" placeholder="BPM"><input id="a-key" placeholder="Тональность (F# min)"><input id="a-tag" placeholder="Жанр (trap / dark)"><input id="a-price" type="number" placeholder="Цена от, $">
 <label>Демка (mp3, лучше 30–90 сек с тегом, до 45 МБ)<input id="a-file" type="file" accept="audio/*"></label>
+<label>Обложка для пластинки (любая картинка, станет круглой)<input id="a-cover" type="file" accept="image/*"></label>
 <button class="btn" id="sv">Добавить</button><button class="btn o" id="cn" hidden>Отмена</button><div id="am" class="m"></div>
 <h2 style="margin:26px 0 6px;font-size:24px">Мои биты</h2><div id="lst"></div>
 <p><a href="/" style="color:var(--mute)">← на сайт</a> · <a href="#" id="out" style="color:var(--mute)">выйти</a></p>
@@ -92,7 +93,7 @@ function api(path,opt,auth){
 var rows=[],ed=null;
 function msg(t){$("am").textContent=t}
 function fill(b){
-  $("a-n").value=b?b.name:"";$("a-bpm").value=b?b.bpm:"";$("a-key").value=b?b.musical_key:"";$("a-tag").value=b?b.tag:"";$("a-price").value=b?b.price:"";$("a-file").value="";
+  $("a-n").value=b?b.name:"";$("a-bpm").value=b?b.bpm:"";$("a-key").value=b?b.musical_key:"";$("a-tag").value=b?b.tag:"";$("a-price").value=b?b.price:"";$("a-file").value="";$("a-cover").value="";
   $("sv").textContent=b?"Сохранить изменения":"Добавить";$("ph").textContent=b?"Изменить бит":"Добавить бит";$("cn").hidden=!b;
 }
 function load(){return api("/rest/v1/beats?select=*&order=created_at.desc").then(function(r){rows=r;
@@ -114,6 +115,7 @@ $("lst").onclick=function(e){
   msg("Удаляю…");
   api("/rest/v1/beats?id=eq."+b.id,{method:"DELETE"},true)
   .then(function(){return b.audio_path?api("/storage/v1/object/demos/"+b.audio_path,{method:"DELETE"},true).catch(function(){}):0})
+  .then(function(){return b.cover_path?api("/storage/v1/object/demos/"+b.cover_path,{method:"DELETE"},true).catch(function(){}):0})
   .then(function(){msg("Удалено");return load()}).catch(function(e){msg("Ошибка: "+e.message)});
 };
 $("sv").onclick=function(){
@@ -126,10 +128,14 @@ $("sv").onclick=function(){
   var up=Promise.resolve();
   if(f){var p=Date.now()+"-"+f.name.toLowerCase().replace(/[^a-z0-9.]+/g,"-");
     up=api("/storage/v1/object/demos/"+p,{method:"POST",headers:{"Content-Type":f.type||"audio/mpeg"},body:f},true).then(function(){row.audio_path=p})}
+  var cf=$("a-cover").files[0],oldc=ed&&ed.cover_path;
+  if(cf){up=up.then(function(){return small(cf)}).then(function(bl){var cp="cover-"+Date.now()+".jpg";return api("/storage/v1/object/demos/"+cp,{method:"POST",headers:{"Content-Type":"image/jpeg"},body:bl},true).then(function(){row.cover_path=cp})})}
   up.then(function(){return ed?api("/rest/v1/beats?id=eq."+ed.id,{method:"PATCH",headers:JH,body:JSON.stringify(row)},true):api("/rest/v1/beats",{method:"POST",headers:JH,body:JSON.stringify(row)},true)})
   .then(function(){if(f&&old)return api("/storage/v1/object/demos/"+old,{method:"DELETE"},true).catch(function(){})})
+  .then(function(){if(cf&&oldc)return api("/storage/v1/object/demos/"+oldc,{method:"DELETE"},true).catch(function(){})})
   .then(function(){ed=null;fill(null);msg("Готово ✓");return load()})
   .catch(function(e){msg("Ошибка: "+e.message)});
 };
+function small(f){return new Promise(function(ok,no){var im=new Image(),u=URL.createObjectURL(f);im.onload=function(){var s=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=600;c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,600,600);URL.revokeObjectURL(u);c.toBlob(function(b){b?ok(b):no(new Error("не удалось обработать картинку"))},"image/jpeg",.85)};im.onerror=function(){no(new Error("не удалось открыть картинку"))};im.src=u})}
 if(ss)show();
 </script></body></html>
