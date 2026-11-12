@@ -90,7 +90,7 @@ footer{border-top:1px solid var(--line)}
 /* подпись на пластинке: крупнее и в две строки вокруг отверстия */
 .vinyl{container-type:inline-size}
 .vinyl::before{content:"VINTAGE\A BEATS";white-space:pre;box-sizing:border-box;width:62%;padding:0;font:400 30px/1.55 Anton,Impact,"Arial Narrow",sans-serif;font-size:9.5cqw;letter-spacing:.14em;text-transform:uppercase;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.35);display:grid;place-items:center;text-align:center}
-</style></head><body><div class="wrap">
+.tgc{cursor:pointer;transition:color .2s,border-color .2s}.tgc:hover{color:var(--acc2);border-color:var(--acc)}.fbar{margin:0 0 16px;font:13px "Space Mono","Courier New",monospace;color:var(--mute)}.fbar b{color:var(--acc2)}.fbar .btn{padding:6px 12px;font-size:11px;margin:0 0 0 10px}</style></head><body><div class="wrap">
   <div class="top">
     <div class="logo">Vintage <i>Beats</i></div>
     <div><a href="#beats">Биты</a><a href="#lic">Цены</a><a href="#buy">Связь</a></div>
@@ -109,6 +109,7 @@ footer{border-top:1px solid var(--line)}
   <section id="beats">
     <h2>Новые пластинки</h2>
     <div class="sub">Наведи на диск или нажми, чтобы послушать</div>
+    <div id="fbar" class="fbar" hidden></div>
     <div class="grid" id="list"></div>
   </section>
 
@@ -151,7 +152,7 @@ function stop(){if(cur){cur.pause();curDisc.classList.remove("on")}}
 function go(a,d){var p=a.play();if(p&&p.then){p.then(function(){d.classList.add("on")}).catch(function(){})}else d.classList.add("on")}
 function tagsHtml(b){
   if(!b.tags)return "";
-  var h=b.tags.split(",").map(function(t){t=t.trim();return t?"<span>#"+esc(t)+"</span>":""}).join("");
+  var h=b.tags.split(",").map(function(t){t=t.trim();return t?'<span class="tgc" data-t="'+esc(t)+'" title="Показать биты с этим тегом">#'+esc(t)+'</span>':""}).join("");
   return h?'<div class="tags">'+h+"</div>":"";
 }
 function render(rows){
@@ -173,7 +174,21 @@ function render(rows){
     list.appendChild(d);
   });
 }
+var ALL=[],ACT="";
+function hasTag(b,t){return (b.tags||"").split(",").some(function(x){return x.trim().toLowerCase()===t.toLowerCase()})}
+function show(){
+  stop();
+  var bar=$("fbar"),rows=ACT?ALL.filter(function(b){return hasTag(b,ACT)}):ALL;
+  bar.hidden=!ACT;
+  if(ACT)bar.innerHTML='Биты с тегом <b>#'+esc(ACT)+'</b> <button class="btn o" id="fclr">Показать все</button>';
+  render(rows);
+}
+list.onclick=function(e){
+  var t=e.target.closest&&e.target.closest(".tgc");if(!t)return;
+  ACT=t.getAttribute("data-t");show();$("beats").scrollIntoView({behavior:"smooth"});
+};
+document.addEventListener("click",function(e){if(e.target.id==="fclr"){ACT="";show()}});
 fetch(SB+"/rest/v1/beats?select=*&order=created_at.desc",{headers:{apikey:KEY}})
-  .then(function(r){if(!r.ok)throw 0;return r.json()}).then(render)
+  .then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(r){ALL=r;show()})
   .catch(function(){list.innerHTML='<p class="sub">Не удалось загрузить биты, обнови страницу</p>'});
 </script></body></html>
