@@ -32,7 +32,7 @@ a{color:inherit}
 .vinyl::before{content:"VINTAGE BEATS";width:34%;aspect-ratio:1;border-radius:50%;background:var(--acc);display:grid;place-items:center;text-align:center;font:700 10px "Courier New",monospace;letter-spacing:.1em;color:#fff7e6;padding:14%;line-height:1.2}
 .vinyl::after{content:"";position:absolute;width:5%;aspect-ratio:1;border-radius:50%;background:var(--bg)}
 @keyframes spin{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){.vinyl,.disc.on{animation:none}}
+
 h2{font-size:clamp(26px,5vw,38px);margin:46px 0 6px}
 .sub{color:var(--mute);font:13px "Courier New",monospace;text-transform:uppercase;letter-spacing:.12em;margin-bottom:18px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
@@ -85,7 +85,7 @@ footer{border-top:1px solid var(--line)}
 .f input{font-family:inherit;border-radius:2px}
 @keyframes flick{0%,90%,100%{opacity:1}91%{opacity:.35}92%{opacity:1}95%{opacity:.5}96%{opacity:1}}
 @keyframes rise{from{opacity:0;transform:translateY(14px)}}
-@media(prefers-reduced-motion:reduce){.card,.hero h1 em{animation:none}}
+
 
 /* подпись на пластинке: крупнее и в две строки вокруг отверстия */
 .vinyl{container-type:inline-size}
@@ -106,8 +106,17 @@ footer{border-top:1px solid var(--line)}
 .artists img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block;filter:contrast(1.05)}
 .artists .nm{position:absolute;left:0;right:0;bottom:0;padding:30px 14px 12px;background:linear-gradient(transparent,rgba(0,0,0,.88));font:400 clamp(28px,5vw,46px)/1 Anton,Impact,sans-serif;text-transform:uppercase;letter-spacing:.03em;color:#fff}
 @media(max-width:560px){.top div a{display:none}}
-@media(prefers-reduced-motion:reduce){.artists .sl{transition:none}}
-.artists{max-width:420px;aspect-ratio:1/1}</style></head><body><div class="wrap">
+
+.artists{max-width:420px;aspect-ratio:1/1}
+/* бегущая лента фото справа налево, края размыты */
+.artists{max-width:560px;aspect-ratio:auto;height:320px;border:0;border-radius:0;background:none;overflow:hidden;-webkit-mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent)}
+.artists::before,.artists::after{content:"";position:absolute;top:0;bottom:0;width:10%;z-index:2;pointer-events:none;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px)}
+.artists::before{left:0;-webkit-mask-image:linear-gradient(to right,#000,transparent);mask-image:linear-gradient(to right,#000,transparent)}
+.artists::after{right:0;-webkit-mask-image:linear-gradient(to left,#000,transparent);mask-image:linear-gradient(to left,#000,transparent)}
+.tk{display:flex;width:max-content;animation:slide var(--d,60s) linear infinite}
+.it{position:relative;flex:0 0 auto;width:320px;height:320px;margin-right:16px;overflow:hidden}
+@keyframes slide{to{transform:translateX(-50%)}}
+</style></head><body><div class="wrap">
   <div class="top">
     <div class="logo">Vintage <i>Beats</i></div>
     <div><a href="#beats">Биты</a><a href="#lic">Цены</a><a href="#buy">Связь</a><button class="btn" id="hd-auth">Войти</button></div>
@@ -273,11 +282,9 @@ $("hd-auth").onclick=function(){if(U)logoutU();else{$("auth").hidden=false;$("au
 function startArtists(rows){
   if(!rows.length)return;
   var box=$("artists");
-  box.innerHTML=rows.map(function(a,i){return '<div class="sl'+(i?'':' on')+'"><img alt="'+esc(a.name)+'" src="'+esc(a.src)+'">'+(a.name?'<div class="nm">'+esc(a.name)+'</div>':'')+'</div>'}).join("");
+  var items=rows.map(function(a){return '<div class="it"><img alt="'+esc(a.name)+'" src="'+esc(a.src)+'">'+(a.name?'<div class="nm">'+esc(a.name)+'</div>':'')+'</div>'}).join("");
+  box.innerHTML='<div class="tk" style="--d:'+Math.max(20,rows.length*10)+'s">'+items+items+'</div>';
   box.hidden=false;$("hero-s").hidden=false;$("hero-h1").hidden=true;
-  var sl=box.querySelectorAll(".sl"),k=0;
-  if(sl.length>1)
-    setInterval(function(){sl[k].classList.remove("on");k=(k+1)%sl.length;sl[k].classList.add("on")},3500);
 }
 var SA=[];for(var q=1;q<=9;q++)SA.push({name:"",src:"a0"+q+".jpg"});
 fetch(SB+"/rest/v1/artists?select=name,image_path&order=created_at.asc",{headers:{apikey:KEY}})
