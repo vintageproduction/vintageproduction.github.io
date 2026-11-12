@@ -1,4 +1,7 @@
-<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>VINTAGE BEATS — биты на продажу</title><meta name="description" content="Биты на продажу: trap, drill, dark. Vintage Beats."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"><style>
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>VINTAGE BEATS — биты на продажу</title><meta name="description" content="Биты на продажу: trap, drill, dark. Vintage Beats.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="icon" href="icon.png" sizes="192x192" type="image/png"><link rel="apple-touch-icon" href="icon.png">
+<meta property="og:type" content="website"><meta property="og:title" content="VINTAGE BEATS — биты на продажу"><meta property="og:description" content="Trap, drill, dark. Лицензии от $0, покупка через Telegram."><meta property="og:url" content="https://vintagehustleprod.com/"><meta property="og:image" content="https://vintagehustleprod.com/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="VINTAGE BEATS — биты на продажу"><meta name="twitter:image" content="https://vintagehustleprod.com/og.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"><style>
 :root{
   color-scheme:light;
   --bg:#f1e4c8;--paper:#f8eed7;--ink:#3b2416;--mute:#7a5d48;--acc:#d9531e;--acc2:#e8a33d;--line:#c9b08a;--vinyl:#1a120d;
@@ -116,7 +119,18 @@ footer{border-top:1px solid var(--line)}
 .tk{display:flex;width:max-content;animation:slide var(--d,60s) linear infinite}
 .it{position:relative;flex:0 0 auto;width:320px;height:320px;margin-right:16px;overflow:hidden}
 @keyframes slide{to{transform:translateX(-50%)}}
-.it .nm{font-size:30px;padding:26px 12px 10px}.plans{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.fl{color:inherit;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px;transition:color .2s}.fl:hover{color:var(--acc2)}</style></head><body><div class="wrap">
+.it .nm{font-size:30px;padding:26px 12px 10px}.plans{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.fl{color:inherit;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px;transition:color .2s}.fl:hover{color:var(--acc2)}.ls{display:block;width:100%;margin:0 0 10px;padding:8px;border:1px solid var(--line);border-radius:2px;background:var(--bg);color:var(--ink);font:12px "Space Mono","Courier New",monospace}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;font:12px "Space Mono","Courier New",monospace;max-width:90vw;text-align:center}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.st{border:1px solid var(--line);background:var(--paper);padding:18px;border-radius:2px}
+.st b{font:400 34px Anton,Impact,sans-serif;color:var(--acc)}
+.st h3{margin:4px 0 6px;font:400 20px Anton,Impact,sans-serif;text-transform:uppercase;letter-spacing:.03em}
+.st p{margin:0;color:var(--mute);font-size:15px}
+#faq{max-width:760px}
+#faq details{border-bottom:1px solid var(--line);padding:14px 0}
+#faq summary{cursor:pointer;font-weight:600;font-size:17px}
+#faq details p{color:var(--mute);margin:10px 0 0;line-height:1.6}
+</style></head><body><div class="wrap">
   <div class="top">
     <div class="logo">Vintage <i>Beats</i></div>
     <div><a href="#beats">Биты</a><a href="#lic">Цены</a><a href="#buy">Связь</a><button class="btn" id="hd-auth">Войти</button></div>
@@ -152,6 +166,17 @@ footer{border-top:1px solid var(--line)}
     <div id="soc"></div>
   </section>
 
+  <section id="how">
+    <h2>Как купить</h2>
+    <div class="sub">Четыре шага</div>
+    <div class="steps">
+      <div class="st"><b>01</b><h3>Слушай</h3><p>Наведи или нажми на диск с битом, чтобы включить демку.</p></div>
+      <div class="st"><b>02</b><h3>Выбери лицензию</h3><p>В карточке бита выбери нужную лицензию в списке.</p></div>
+      <div class="st"><b>03</b><h3>Напиши мне</h3><p>Нажми «Купить», откроется мой Telegram. Текст заказа уже скопирован, просто вставь его.</p></div>
+      <div class="st"><b>04</b><h3>Получи файлы</h3><p>После оплаты я отправлю бит в Telegram.</p></div>
+    </div>
+  </section>
+
   <section id="lic">
     <h2>Лицензии</h2>
     <div class="sub">Выбери подходящую</div>
@@ -167,12 +192,22 @@ footer{border-top:1px solid var(--line)}
     </div>
   </section>
 
+  <section id="faq">
+    <h2>Вопросы</h2>
+    <div class="sub">Коротко о главном</div>
+    <details><summary>Как купить бит?</summary><p>Выбери бит и лицензию в карточке и нажми «Купить». Откроется мой Telegram, напиши название бита и лицензию. Способ оплаты обсудим там, после оплаты я отправлю файлы.</p></details>
+    <details><summary>Чем отличаются лицензии?</summary><p>MP3 лизинг: MP3, до 50 000 прослушиваний, стриминг без монетизации. WAV + дорожки: WAV и отдельные дорожки, до 500 000 прослушиваний, клип на YouTube. Эксклюзив: бит снимается с продажи, безлимитные права и все исходники.</p></details>
+    <details><summary>Что такое FREE MP3?</summary><p>Бесплатный MP3 с моим тегом для некоммерческого использования: без стримингов и монетизации, с обязательной подписью «prod. Vintage Beats». Чтобы получить, нажми FREE в блоке лицензий, это ведёт в мою группу в Telegram.</p></details>
+    <details><summary>Что, если трек выстрелит?</summary><p>Если трек набирает больше прослушиваний, чем разрешает лицензия, напиши мне, и мы обновим её до подходящей.</p></details>
+  </section>
+
   <section id="buy" class="cta">
     <h2>Нашёл свой бит?</h2>
     <p>Напиши название и лицензию. Отвечу быстро.</p>
     <a class="btn" id="tg" href="#">Telegram</a>
   </section>
 </div>
+<div id="toast" class="toast" hidden></div>
 <div id="auth" class="au" hidden><div class="au-in"><button id="au-x" class="au-x" aria-label="Закрыть">✕</button>
 <h3>Вход и регистрация</h3><p class="m">Войди или зарегистрируйся по почте. Почта нужна только для входа и на сайте не показывается.</p>
 <input id="au-e" type="email" placeholder="Почта" autocomplete="username"><input id="au-p" type="password" placeholder="Пароль (от 8 символов)" autocomplete="current-password">
@@ -189,6 +224,10 @@ var cur=null,curDisc=null,list=$("list");
 var canHover=window.matchMedia&&matchMedia("(hover:hover)").matches;
 function stop(){if(cur){cur.pause();curDisc.classList.remove("on")}}
 function go(a,d){var p=a.play();if(p&&p.then){p.then(function(){d.classList.add("on")}).catch(function(){})}else d.classList.add("on")}
+var LIC=[["FREE MP3 с тегом",0],["MP3 лизинг",15],["WAV + дорожки",35],["Эксклюзив",155]];
+var LOPTS=LIC.map(function(l,i){return '<option value="'+i+'"'+(i===1?' selected':'')+'>'+l[0]+' — $'+l[1]+'</option>'}).join("");
+var OT=Math.min.apply(null,LIC.filter(function(l){return l[1]>0}).map(function(l){return l[1]}));
+function toast(t){var el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){el.hidden=true},4500)}
 function tagsHtml(b){
   if(!b.tags)return "";
   var h=b.tags.split(",").map(function(t){t=t.trim();return t?'<span class="tgc" data-t="'+esc(t)+'" title="Показать биты с этим тегом">#'+esc(t)+'</span>':""}).join("");
@@ -200,8 +239,17 @@ function render(rows){
   rows.forEach(function(b){
     var src=b.audio_path?SB+"/storage/v1/object/public/demos/"+b.audio_path:"";
     var d=document.createElement("div");d.className="card";
-    d.innerHTML='<button class="disc"'+(src?'':' disabled title="Демо скоро"')+'>'+(b.cover_path?'<i class="lbl" style="background-image:url('+SB+'/storage/v1/object/public/demos/'+esc(b.cover_path)+')"></i>':'')+'</button><b>'+esc(b.name)+'</b><div class="m">'+esc(b.bpm)+' BPM · '+esc(b.musical_key)+'<br>'+esc(b.tag)+'</div>'+tagsHtml(b)+'<div class="pr">от $'+esc(b.price)+'</div><a class="btn" href="https://t.me/'+TG+'">Купить</a>';
+    d.innerHTML='<button class="disc"'+(src?'':' disabled title="Демо скоро"')+'>'+(b.cover_path?'<i class="lbl" style="background-image:url('+SB+'/storage/v1/object/public/demos/'+esc(b.cover_path)+')"></i>':'')+'</button><b>'+esc(b.name)+'</b><div class="m">'+esc(b.bpm)+' BPM · '+esc(b.musical_key)+'<br>'+esc(b.tag)+'</div>'+tagsHtml(b)+'<div class="pr">от $'+OT+'</div><select class="ls">'+LOPTS+'</select><a class="btn buy" href="https://t.me/'+TG+'" target="_blank" rel="noopener">Купить</a>';
     var disc=d.querySelector(".disc");
+    var sel=d.querySelector(".ls"),buy=d.querySelector(".buy");
+    sel.onchange=function(){buy.textContent=+sel.value===0?"Получить":"Купить"};
+    buy.onclick=function(){
+      var i=+sel.value;
+      if(i===0){buy.href=TGG;return}
+      buy.href="https://t.me/"+TG;
+      var txt="Привет! Хочу бит «"+b.name+"», лицензия: "+LIC[i][0]+" ($"+LIC[i][1]+")";
+      if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){toast("Текст заказа скопирован, вставь его в чат")}).catch(function(){});
+    };
     function start(){
       if(!src)return;
       if(cur&&curDisc===disc){if(cur.paused)go(cur,disc);return}
