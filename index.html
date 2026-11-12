@@ -99,16 +99,25 @@ footer{border-top:1px solid var(--line)}
 .au-in h3{margin:0 0 6px;font-family:Anton,Impact,sans-serif;font-weight:400;text-transform:uppercase;font-size:24px}
 .au-x{position:absolute;top:8px;right:10px;background:none;border:0;color:var(--mute);font-size:20px;cursor:pointer}
 [hidden]{display:none!important}
+#hd-auth{padding:7px 14px;font-size:11px;margin:0 0 0 14px}
+.artists{position:relative;width:100%;max-width:520px;aspect-ratio:16/10;margin:10px 0 18px;overflow:hidden;border:1px solid var(--line);border-radius:2px;background:var(--paper)}
+.artists .sl{position:absolute;inset:0;opacity:0;transition:opacity .8s}
+.artists .sl.on{opacity:1}
+.artists img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block;filter:contrast(1.05)}
+.artists .nm{position:absolute;left:0;right:0;bottom:0;padding:30px 14px 12px;background:linear-gradient(transparent,rgba(0,0,0,.88));font:400 clamp(28px,5vw,46px)/1 Anton,Impact,sans-serif;text-transform:uppercase;letter-spacing:.03em;color:#fff}
+@media(max-width:560px){.top div a{display:none}}
+@media(prefers-reduced-motion:reduce){.artists .sl{transition:none}}
 </style></head><body><div class="wrap">
   <div class="top">
     <div class="logo">Vintage <i>Beats</i></div>
-    <div><a href="#beats">Биты</a><a href="#lic">Цены</a><a href="#buy">Связь</a></div>
+    <div><a href="#beats">Биты</a><a href="#lic">Цены</a><a href="#buy">Связь</a><button class="btn" id="hd-auth">Войти</button></div>
   </div>
 
   <section class="hero">
     <div>
-      <small>Trap · Drill · Dark</small>
-      <h1>Биты со <em>старой</em> душой</h1>
+      <small id="hero-s" hidden>Биты в стиле</small>
+      <div id="artists" class="artists" hidden></div>
+      <h1 id="hero-h1">Биты со <em>старой</em> душой</h1>
       <p>Тёплый, грязный, настоящий звук. Слушай, выбирай лицензию и пиши мне, файлы вышлю после оплаты.</p>
       <a class="btn" href="#beats">Слушать</a><a class="btn o" href="#lic">Цены</a>
     </div>
@@ -155,7 +164,7 @@ footer{border-top:1px solid var(--line)}
   </section>
 </div>
 <div id="auth" class="au" hidden><div class="au-in"><button id="au-x" class="au-x" aria-label="Закрыть">✕</button>
-<h3>Вход для отзывов</h3><p class="m">Войди или зарегистрируйся по почте. Почта нужна только для входа и на сайте не показывается.</p>
+<h3>Вход и регистрация</h3><p class="m">Войди или зарегистрируйся по почте. Почта нужна только для входа и на сайте не показывается.</p>
 <input id="au-e" type="email" placeholder="Почта" autocomplete="username"><input id="au-p" type="password" placeholder="Пароль (от 8 символов)" autocomplete="current-password">
 <button class="btn" id="au-in">Войти</button><button class="btn o" id="au-up">Регистрация</button><div id="au-m" class="m"></div></div></div>
 <footer>© <span id="y"></span> Vintage Beats <a id="gear" hidden href="admin.html" title="Админка" aria-label="Админка" style="text-decoration:none;opacity:.35;margin-left:10px">⚙</a></footer><script>var SB="https://lyejwcetufbwjyeihjbg.supabase.co",KEY="sb_publishable_U6F7QYuQfUTkLhGN7tYweg_GXjfflzo";
@@ -227,7 +236,7 @@ function logoutU(){
   U=null;localStorage.removeItem("vb_user");renderForm();
 }
 function renderForm(){
-  var f=$("rv-form");
+  var f=$("rv-form");hdAuth();
   if(!U){f.innerHTML='<button class="btn" id="rv-login">Войти, чтобы оставить отзыв</button>';$("rv-login").onclick=function(){$("auth").hidden=false;$("au-m").textContent=""};return}
   f.innerHTML='<p class="m">Проверяю…</p>';
   uapi("/rest/v1/reviews?select=approved&user_id=eq."+U.id).then(function(r){
@@ -260,6 +269,19 @@ function authDo(mode){
 $("au-x").onclick=function(){$("auth").hidden=true};
 $("au-in").onclick=function(){authDo("in")};
 $("au-up").onclick=function(){authDo("up")};
+function hdAuth(){$("hd-auth").textContent=U?"Выйти":"Войти"}
+$("hd-auth").onclick=function(){if(U)logoutU();else{$("auth").hidden=false;$("au-m").textContent=""}};
+function startArtists(rows){
+  if(!rows.length)return;
+  var box=$("artists");
+  box.innerHTML=rows.map(function(a,i){return '<div class="sl'+(i?'':' on')+'"><img alt="'+esc(a.name)+'" src="'+SB+'/storage/v1/object/public/demos/'+esc(a.image_path)+'"><div class="nm">'+esc(a.name)+'</div></div>'}).join("");
+  box.hidden=false;$("hero-s").hidden=false;$("hero-h1").hidden=true;
+  var sl=box.querySelectorAll(".sl"),k=0;
+  if(sl.length>1&&!(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches))
+    setInterval(function(){sl[k].classList.remove("on");k=(k+1)%sl.length;sl[k].classList.add("on")},3500);
+}
+fetch(SB+"/rest/v1/artists?select=name,image_path&order=created_at.asc",{headers:{apikey:KEY}})
+  .then(function(r){if(!r.ok)throw 0;return r.json()}).then(startArtists).catch(function(){});
 renderForm();loadRv();
 
 var ALL=[],ACT="";

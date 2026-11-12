@@ -103,6 +103,9 @@ footer{border-top:1px solid var(--line)}
 <label>Обложка для пластинки (любая картинка, станет круглой)<input id="a-cover" type="file" accept="image/*"></label>
 <button class="btn" id="sv">Добавить</button><button class="btn o" id="cn" hidden>Отмена</button><div id="am" class="m"></div>
 <h2 style="margin:26px 0 6px;font-size:24px">Мои биты</h2><div id="lst"></div>
+<h2 style="margin:26px 0 6px;font-size:24px">Исполнители в шапке</h2>
+<input id="ar-n" placeholder="Имя исполнителя"><label>Фото (любое)<input id="ar-f" type="file" accept="image/*"></label>
+<button class="btn" id="ar-add">Добавить</button><div id="ar-m" class="m"></div><div id="art"></div>
 <h2 style="margin:26px 0 6px;font-size:24px">Отзывы</h2><div id="rev"></div>
 <p><a href="/" style="color:var(--mute)">← на сайт</a> · <a href="#" id="out" style="color:var(--mute)">выйти</a></p>
 </div></div><script>var SB="https://lyejwcetufbwjyeihjbg.supabase.co",KEY="sb_publishable_U6F7QYuQfUTkLhGN7tYweg_GXjfflzo";
@@ -129,7 +132,7 @@ function fill(b){
 }
 function load(){return api("/rest/v1/beats?select=*&order=created_at.desc").then(function(r){rows=r;
   $("lst").innerHTML=rows.map(function(b,i){return '<div class="ar"><span>'+esc(b.name)+(b.audio_path?' 🎧':'')+'</span><span><button data-e="'+i+'" title="Изменить">✎</button><button data-d="'+i+'" title="Удалить">✕</button></span></div>'}).join("")||'<p class="m">Битов пока нет</p>'})}
-function show(){$("login").hidden=true;$("panel").hidden=false;loadRev();load().catch(function(e){msg("Ошибка: "+e.message)})}
+function show(){$("login").hidden=true;$("panel").hidden=false;loadArt();loadRev();load().catch(function(e){msg("Ошибка: "+e.message)})}
 $("go").onclick=function(){
   $("lm").textContent="Вхожу…";
   fetch(SB+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify({email:$("em").value.trim(),password:$("pw").value})})
@@ -166,6 +169,31 @@ $("sv").onclick=function(){
   .then(function(){if(cf&&oldc)return api("/storage/v1/object/demos/"+oldc,{method:"DELETE"},true).catch(function(){})})
   .then(function(){ed=null;fill(null);msg("Готово ✓");return load()})
   .catch(function(e){msg("Ошибка: "+e.message)});
+};
+var arts=[];
+function shrink(f,m){return new Promise(function(ok,no){var im=new Image(),u=URL.createObjectURL(f);im.onload=function(){var k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(function(b){b?ok(b):no(new Error("не удалось обработать картинку"))},"image/jpeg",.85)};im.onerror=function(){no(new Error("не удалось открыть картинку"))};im.src=u})}
+function loadArt(){
+  return api("/rest/v1/artists?select=*&order=created_at.asc").then(function(r){
+    arts=r;
+    $("art").innerHTML=r.map(function(x,i){return '<div class="ar"><span>'+esc(x.name)+'</span><span><button data-xd="'+i+'" title="Удалить">✕</button></span></div>'}).join("")||'<p class="m">Пока никого, в шапке показывается обычный заголовок</p>';
+  }).catch(function(e){$("art").textContent="Ошибка: "+e.message+" (создана ли таблица artists?)"});
+}
+$("art").onclick=function(e){
+  var d=e.target.getAttribute("data-xd");if(d===null)return;
+  var x=arts[d];if(!confirm("Убрать «"+x.name+"»?"))return;
+  api("/rest/v1/artists?id=eq."+x.id,{method:"DELETE"},true)
+  .then(function(){return api("/storage/v1/object/demos/"+x.image_path,{method:"DELETE"},true).catch(function(){})})
+  .then(loadArt).catch(function(er){$("ar-m").textContent="Ошибка: "+er.message});
+};
+$("ar-add").onclick=function(){
+  var n=$("ar-n").value.trim(),f=$("ar-f").files[0];
+  if(!n||!f){$("ar-m").textContent="Нужны имя и фото";return}
+  $("ar-m").textContent="Загружаю…";
+  var p="artist-"+Date.now()+".jpg";
+  shrink(f,1000).then(function(bl){return api("/storage/v1/object/demos/"+p,{method:"POST",headers:{"Content-Type":"image/jpeg"},body:bl},true)})
+  .then(function(){return api("/rest/v1/artists",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:n,image_path:p})},true)})
+  .then(function(){$("ar-n").value="";$("ar-f").value="";$("ar-m").textContent="Готово ✓";return loadArt()})
+  .catch(function(er){$("ar-m").textContent="Ошибка: "+er.message});
 };
 var revs=[];
 function loadRev(){
