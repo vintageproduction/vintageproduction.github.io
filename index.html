@@ -172,7 +172,7 @@ footer{border-top:1px solid var(--line)}
     <div class="steps">
       <div class="st"><b>01</b><h3>Слушай</h3><p>Наведи или нажми на диск с битом, чтобы включить демку.</p></div>
       <div class="st"><b>02</b><h3>Выбери лицензию</h3><p>В карточке бита выбери нужную лицензию в списке.</p></div>
-      <div class="st"><b>03</b><h3>Напиши мне</h3><p>Нажми «Купить», откроется мой Telegram. Текст заказа уже скопирован, просто вставь его.</p></div>
+      <div class="st"><b>03</b><h3>Напиши мне</h3><p>Нажми «Купить»: откроется мой Telegram с готовым сообщением, останется отправить. Если не подставилось, оно уже скопировано.</p></div>
       <div class="st"><b>04</b><h3>Получи файлы</h3><p>После оплаты я отправлю бит в Telegram.</p></div>
     </div>
   </section>
@@ -195,7 +195,7 @@ footer{border-top:1px solid var(--line)}
   <section id="faq">
     <h2>Вопросы</h2>
     <div class="sub">Коротко о главном</div>
-    <details><summary>Как купить бит?</summary><p>Выбери бит и лицензию в карточке и нажми «Купить». Откроется мой Telegram, напиши название бита и лицензию. Способ оплаты обсудим там, после оплаты я отправлю файлы.</p></details>
+    <details><summary>Как купить бит?</summary><p>Выбери бит и лицензию в карточке и нажми «Купить». Откроется мой Telegram с готовым сообщением, останется его отправить. Способ оплаты обсудим там, после оплаты я отправлю файлы.</p></details>
     <details><summary>Чем отличаются лицензии?</summary><p>MP3 лизинг: MP3, до 50 000 прослушиваний, стриминг без монетизации. WAV + дорожки: WAV и отдельные дорожки, до 500 000 прослушиваний, клип на YouTube. Эксклюзив: бит снимается с продажи, безлимитные права и все исходники.</p></details>
     <details><summary>Что такое FREE MP3?</summary><p>Бесплатный MP3 с моим тегом для некоммерческого использования: без стримингов и монетизации, с обязательной подписью «prod. Vintage Beats». Чтобы получить, нажми FREE в блоке лицензий, это ведёт в мою группу в Telegram.</p></details>
     <details><summary>Что, если трек выстрелит?</summary><p>Если трек набирает больше прослушиваний, чем разрешает лицензия, напиши мне, и мы обновим её до подходящей.</p></details>
@@ -246,9 +246,9 @@ function render(rows){
     buy.onclick=function(){
       var i=+sel.value;
       if(i===0){buy.href=TGG;return}
-      buy.href="https://t.me/"+TG;
       var txt="Привет! Хочу бит «"+b.name+"», лицензия: "+LIC[i][0]+" ($"+LIC[i][1]+")";
-      if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){toast("Текст заказа скопирован, вставь его в чат")}).catch(function(){});
+      buy.href="https://t.me/"+TG+"?text="+encodeURIComponent(txt);
+      if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){toast("Если сообщение не подставилось, оно скопировано, вставь его в чат")}).catch(function(){});
     };
     function start(){
       if(!src)return;
