@@ -93,10 +93,25 @@ footer{border-top:1px solid var(--line)}
 @keyframes flick{0%,90%,100%{opacity:1}91%{opacity:.35}92%{opacity:1}95%{opacity:.5}96%{opacity:1}}
 @keyframes rise{from{opacity:0;transform:translateY(14px)}}
 @media(prefers-reduced-motion:reduce){.card,.hero h1 em{animation:none}}
+.tl{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:8px;margin:6px 0 10px}
+.tl div{border:1px solid var(--line);background:var(--paper);padding:8px 4px;text-align:center;border-radius:2px}
+.tl b{display:block;font:400 26px Anton,Impact,sans-serif;color:var(--acc2)}
+.tl span{font-size:11px;color:var(--mute)}
+.bars{display:flex;align-items:flex-end;gap:3px;height:74px;margin:6px 0 2px}
+.bars i{flex:1;background:var(--acc);min-height:2px;opacity:.9}
+.stt{margin:12px 0 2px;font:12px "Space Mono","Courier New",monospace;color:var(--mute);text-transform:uppercase;letter-spacing:.1em}
 </style></head><body><div class="box">
 <div class="logo" style="margin-bottom:18px">Vintage <i>Beats</i> · админка</div>
 <div id="login" class="f"><input id="em" type="email" placeholder="Почта" autocomplete="username"><input id="pw" type="password" placeholder="Пароль" autocomplete="current-password"><button class="btn" id="go">Войти</button><div id="lm" class="m"></div></div>
 <div id="panel" hidden class="f">
+<div id="stx">
+<h2 style="margin:0 0 6px;font-size:24px">Статистика</h2>
+<div style="margin-bottom:8px"><button class="btn o" type="button" data-d="1">24 ч</button><button class="btn o" type="button" data-d="7">7 дней</button><button class="btn o" type="button" data-d="30">30 дней</button><button class="btn o" type="button" data-d="0">Всё время</button></div>
+<div id="stats" class="m">Загружаю…</div>
+<label style="margin:12px 0 8px"><input id="noc" type="checkbox" style="display:inline;width:auto;margin:0 8px 0 0">Не считать мои заходы на этом устройстве</label>
+<button class="btn o" id="stReset" type="button">Сбросить статистику</button>
+</div>
+<hr style="border:0;border-top:2px double var(--line);margin:26px 0">
 <h2 id="ph" style="margin:0 0 10px;font-size:24px">Добавить бит</h2>
 <input id="a-n" placeholder="Название"><input id="a-bpm" type="number" placeholder="BPM"><input id="a-key" placeholder="Тональность (F# min)"><input id="a-tag" placeholder="Жанр (trap / dark)"><input id="a-tags" placeholder="Теги через запятую (dark, aggressive, melodic)"><input id="a-price" type="number" placeholder="Цена от, $">
 <label>Демка (mp3, лучше 30–90 сек с тегом, до 45 МБ)<input id="a-file" type="file" accept="audio/*"></label>
@@ -132,7 +147,7 @@ function fill(b){
 }
 function load(){return api("/rest/v1/beats?select=*&order=created_at.desc").then(function(r){rows=r;
   $("lst").innerHTML=rows.map(function(b,i){return '<div class="ar"><span>'+esc(b.name)+(b.audio_path?' 🎧':'')+'</span><span><button data-e="'+i+'" title="Изменить">✎</button><button data-d="'+i+'" title="Удалить">✕</button></span></div>'}).join("")||'<p class="m">Битов пока нет</p>'})}
-function show(){$("login").hidden=true;$("panel").hidden=false;loadArt();loadRev();load().then(openEdit).catch(function(e){msg("Ошибка: "+e.message)})}
+function show(){$("login").hidden=true;$("panel").hidden=false;loadArt();loadRev();load().then(openEdit).then(function(){return loadStats(stDays)}).catch(function(e){msg("Ошибка: "+e.message)})}
 $("go").onclick=function(){
   $("lm").textContent="Вхожу…";
   fetch(SB+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify({email:$("em").value.trim(),password:$("pw").value})})
@@ -211,6 +226,61 @@ function openEdit(){
   var id=new URLSearchParams(location.search).get("edit");if(!id)return;
   for(var i=0;i<rows.length;i++)if(rows[i].id===id){ed=rows[i];fill(ed);msg("Правишь «"+ed.name+"». Новую демку или обложку выбирай, только если хочешь заменить.");window.scrollTo(0,0);break}
 }
+var stDays=7;
+function stSince(d){return d?new Date(Date.now()-d*864e5).toISOString():"1970-01-01T00:00:00Z"}
+function fetchEvents(since){
+  var out=[],page=0;
+  function next(){
+    var from=page*1000;
+    return api("/rest/v1/events?select=created_at,vid,type,beat_id,label,ref,lang,dev&created_at=gte."+encodeURIComponent(since)+"&order=created_at.desc",{headers:{Range:from+"-"+(from+999),"Range-Unit":"items"}},true)
+      .then(function(r){out=out.concat(r);if(r.length===1000&&++page<20)return next();return out});
+  }
+  return next();
+}
+function bname(id){for(var i=0;i<rows.length;i++)if(rows[i].id===id)return rows[i].name;return id?"бит "+String(id).slice(0,6):"—"}
+function topN(o,n){return Object.keys(o).map(function(k){return[k,o[k]]}).sort(function(a,b){return b[1]-a[1]}).slice(0,n||8)}
+function lst(title,o,n,fmt){
+  var t=topN(o,n);if(!t.length)return"";
+  return '<div class="stt">'+title+'</div>'+t.map(function(x){return '<div class="ar"><span>'+esc(fmt?fmt(x[0]):x[0])+'</span><b>'+x[1]+'</b></div>'}).join("");
+}
+function showStats(ev,d){
+  var vis={},views=0,plays=0,buys=0,links=0,beats={},src={},lng={},dev={},buyL={},linkL={},day={},i;
+  ev.forEach(function(e){
+    vis[e.vid]=1;
+    var dk=new Date(e.created_at).toLocaleDateString("sv");
+    day[dk]=day[dk]||0;
+    if(e.type==="view"){views++;day[dk]++;var r=e.ref||"direct";src[r]=(src[r]||0)+1;lng[e.lang||"?"]=(lng[e.lang||"?"]||0)+1;dev[e.dev||"?"]=(dev[e.dev||"?"]||0)+1}
+    else if(e.type==="play"){plays++;var b=beats[e.beat_id]=beats[e.beat_id]||{p:0,b:0,u:{}};b.p++;b.u[e.vid]=1}
+    else if(e.type==="buy"){buys++;var b2=beats[e.beat_id]=beats[e.beat_id]||{p:0,b:0,u:{}};b2.b++;buyL[e.label||"?"]=(buyL[e.label||"?"]||0)+1}
+    else if(e.type==="link"){links++;linkL[e.label||"?"]=(linkL[e.label||"?"]||0)+1}
+  });
+  var nv=Object.keys(vis).length,h='<div class="tl"><div><b>'+nv+'</b><span>посетителей</span></div><div><b>'+views+'</b><span>заходов</span></div><div><b>'+plays+'</b><span>прослушиваний</span></div><div><b>'+buys+'</b><span>нажатий «Купить»</span></div><div><b>'+links+'</b><span>переходов по ссылкам</span></div></div>';
+  /* график заходов по дням */
+  var days=[],n=d?Math.min(d,30):14,mx=1;
+  for(i=n-1;i>=0;i--){var dt=new Date(Date.now()-i*864e5).toLocaleDateString("sv");days.push(dt);mx=Math.max(mx,day[dt]||0)}
+  h+='<div class="stt">Заходы по дням</div><div class="bars">'+days.map(function(k){return '<i title="'+k+': '+(day[k]||0)+'" style="height:'+Math.max(2,Math.round((day[k]||0)/mx*70))+'px"></i>'}).join("")+'</div><div class="m" style="display:flex;justify-content:space-between"><span>'+days[0]+'</span><span>'+days[days.length-1]+'</span></div>';
+  var bt={};Object.keys(beats).forEach(function(k){bt[k]=beats[k].p});
+  var t=topN(bt,50);
+  if(Object.keys(beats).length){
+    h+='<div class="stt">Биты: слушатели · прослушивания · «Купить»</div>'+Object.keys(beats).sort(function(a,b){return beats[b].p+beats[b].b-beats[a].p-beats[a].b}).slice(0,12).map(function(k){var x=beats[k];return '<div class="ar"><span>'+esc(bname(k))+'</span><b>'+Object.keys(x.u).length+' · '+x.p+' · '+x.b+'</b></div>'}).join("");
+  }
+  h+=lst("Откуда пришли (заходы)",src,8)+lst("«Купить» по лицензиям",buyL,6,function(x){return({"FREE MP3 with tag":"FREE MP3 с тегом","MP3 lease":"MP3 лизинг","WAV + trackouts":"WAV + дорожки","Exclusive":"Эксклюзив"})[x]||x})+lst("Переходы по ссылкам",linkL,8)+lst("Языки",lng,6)+lst("Устройства",dev,3,function(x){return x==="mobile"?"телефон":x==="desktop"?"компьютер":x});
+  if(!ev.length)h='<p class="m">За этот период событий пока нет. Откройте сайт с другого устройства или с телефона (без входа в админку), событие должно появиться через пару секунд.</p>';
+  $("stats").innerHTML=h;
+}
+function loadStats(d){
+  stDays=d;$("stats").textContent="Загружаю…";
+  return fetchEvents(stSince(d)).then(function(ev){showStats(ev,d)}).catch(function(e){$("stats").textContent="Ошибка: "+e.message+" (создана ли таблица events?)"});
+}
+(function(){
+  [].forEach.call(document.querySelectorAll("#stx [data-d]"),function(b){b.onclick=function(){loadStats(+b.getAttribute("data-d"))}});
+  var c=$("noc");try{c.checked=!!localStorage.getItem("vb_noc")}catch(e){}
+  c.onchange=function(){try{if(c.checked)localStorage.setItem("vb_noc","1");else localStorage.removeItem("vb_noc")}catch(e){}};
+  $("stReset").onclick=function(){
+    if(!confirm("Удалить всю статистику? Это нельзя отменить."))return;
+    api("/rest/v1/events?created_at=gt.1970-01-01T00:00:00Z",{method:"DELETE"},true).then(function(){return loadStats(stDays)}).catch(function(e){$("stats").textContent="Ошибка: "+e.message});
+  };
+})();
 function small(f){return new Promise(function(ok,no){var im=new Image(),u=URL.createObjectURL(f);im.onload=function(){var s=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=600;c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,600,600);URL.revokeObjectURL(u);c.toBlob(function(b){b?ok(b):no(new Error("не удалось обработать картинку"))},"image/jpeg",.85)};im.onerror=function(){no(new Error("не удалось открыть картинку"))};im.src=u})}
 if(ss)show();
 </script></body></html>
