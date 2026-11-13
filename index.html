@@ -190,6 +190,14 @@ html:has(#boot){overflow:hidden}
 @keyframes btype{to{width:26ch}}
 @keyframes bootout{0%{clip-path:inset(0 0 0 0);background:#000;opacity:1}50%{clip-path:inset(49.6% 0 49.6% 0);background:#000;opacity:1}56%{background:#fff}100%{clip-path:inset(49.8% 50% 49.8% 50%);background:#fff;opacity:0;visibility:hidden}}
 @keyframes bootfail{to{visibility:hidden;opacity:0}}
+.adm-fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:40;display:none}
+.adm .adm-fab{display:block}
+.adm-b{background:var(--acc);color:#fff;border:0;border-radius:999px;padding:12px 18px;font:700 13px "Space Mono","Courier New",monospace;letter-spacing:.06em;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.15);transition:background .2s}
+.adm-b:hover{background:var(--acc2)}
+.adm-menu{position:absolute;right:0;bottom:calc(100% + 8px);min-width:210px;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:6px;display:none;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+.adm-fab.open .adm-menu{display:block}
+.adm-menu a,.adm-menu button{display:block;width:100%;text-align:left;padding:10px 12px;color:var(--ink);text-decoration:none;font:13px "Space Mono","Courier New",monospace;background:none;border:0;cursor:pointer;border-radius:2px}
+.adm-menu a:hover,.adm-menu button:hover{background:rgba(209,26,42,.28)}
 </style></head><body><div id="boot" aria-hidden="true"><div class="bl b" style="animation-delay:.15s">VINTAGE BEATS</div><div class="bl" style="animation-delay:.55s">INSERT TAPE ........ OK</div><div class="bl" style="animation-delay:.95s">TRACKING ........... OK</div><div class="bl" style="animation-delay:1.35s">&#9654; PLAY</div></div><div class="wrap">
   <div class="top">
     <div class="logo">Vintage <i>Beats</i></div>
@@ -268,6 +276,7 @@ html:has(#boot){overflow:hidden}
   </section>
 </div>
 <div class="vhs" id="vhs" aria-hidden="true"><i class="vhs-n"></i><div class="vhs-osd"><b>▶ PLAY</b><span id="vhs-tc">00:00:00</span></div></div>
+<div class="adm-fab" id="admFab"><div class="adm-menu" id="admMenu"><a href="admin.html">Открыть админку</a><a href="admin.html#stx">Статистика</a><a href="admin.html#ph">Добавить бит</a><button type="button" id="admOut">Выйти из админки</button></div><button type="button" class="adm-b" id="admBtn">⚙ Админка</button></div>
 <div id="toast" class="toast" hidden></div>
 <div id="auth" class="au" hidden><div class="au-in"><button id="au-x" class="au-x" aria-label="Закрыть">✕</button>
 <h3>Вход и регистрация</h3><p class="m">Войди или зарегистрируйся по почте. Почта нужна только для входа и на сайте не показывается.</p>
@@ -585,6 +594,13 @@ var TRK=(function(){
   });
   setTimeout(function(){send("view",null,null)},0);
   return{send:send};
+})();
+/* ---- плавающая кнопка админки (видна только после входа) ---- */
+(function(){
+  var f=$("admFab");if(!f)return;
+  $("admBtn").onclick=function(e){e.stopPropagation();f.classList.toggle("open")};
+  document.addEventListener("click",function(e){if(!f.contains(e.target))f.classList.remove("open")});
+  $("admOut").onclick=function(){try{localStorage.removeItem("vb_sess")}catch(x){}location.reload()};
 })();
 /* ---- ретро-экран при загрузке: можно пропустить кликом или клавишей ---- */
 (function(){

@@ -147,7 +147,7 @@ function fill(b){
 }
 function load(){return api("/rest/v1/beats?select=*&order=created_at.desc").then(function(r){rows=r;
   $("lst").innerHTML=rows.map(function(b,i){return '<div class="ar"><span>'+esc(b.name)+(b.audio_path?' 🎧':'')+'</span><span><button data-e="'+i+'" title="Изменить">✎</button><button data-d="'+i+'" title="Удалить">✕</button></span></div>'}).join("")||'<p class="m">Битов пока нет</p>'})}
-function show(){$("login").hidden=true;$("panel").hidden=false;loadArt();loadRev();load().then(openEdit).then(function(){return loadStats(stDays)}).catch(function(e){msg("Ошибка: "+e.message)})}
+function show(){$("login").hidden=true;$("panel").hidden=false;loadArt();loadRev();load().then(openEdit).then(function(){return loadStats(stDays)}).then(goHash).catch(function(e){msg("Ошибка: "+e.message)})}
 $("go").onclick=function(){
   $("lm").textContent="Вхожу…";
   fetch(SB+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify({email:$("em").value.trim(),password:$("pw").value})})
@@ -281,6 +281,7 @@ function loadStats(d){
     api("/rest/v1/events?created_at=gt.1970-01-01T00:00:00Z",{method:"DELETE"},true).then(function(){return loadStats(stDays)}).catch(function(e){$("stats").textContent="Ошибка: "+e.message});
   };
 })();
+function goHash(){var h=location.hash;if(h&&h.length>1){var e=document.getElementById(h.slice(1));if(e)e.scrollIntoView()}}
 function small(f){return new Promise(function(ok,no){var im=new Image(),u=URL.createObjectURL(f);im.onload=function(){var s=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=600;c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,600,600);URL.revokeObjectURL(u);c.toBlob(function(b){b?ok(b):no(new Error("не удалось обработать картинку"))},"image/jpeg",.85)};im.onerror=function(){no(new Error("не удалось открыть картинку"))};im.src=u})}
 if(ss)show();
 </script></body></html>
